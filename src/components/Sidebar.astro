@@ -16,7 +16,6 @@ const { class: className, ...rest } = Astro.props;
 interface MenuItem {
   icon: typeof FilesIcon;
   text: string;
-  href?: string;
 }
 
 const menuItems: MenuItem[] = [
@@ -26,11 +25,6 @@ const menuItems: MenuItem[] = [
   { icon: DebugIcon, text: "Run and Debug" },
   { icon: ExtensIcon, text: "Extensions" },
   { icon: GithubIcon, text: "Github" },
-];
-
-const bottomItems: MenuItem[] = [
-  { icon: ProfileIcon, text: "Profile", href: "/" },
-  { icon: SettingsIcon, text: "Settings" },
 ];
 ---
 
@@ -63,32 +57,42 @@ const bottomItems: MenuItem[] = [
     </ul>
 
     <ul>
-      {
-        bottomItems.map((item) => (
-          <li>
-            <a
-              href={item.href}
-              class="group flex items-center justify-center h-12 cursor-pointer transition-colors relative border-l-2 border-transparent data-[active=true]:border-light-500 dark:data-[active=true]:border-white"
-              aria-label={item.text}
-              id={item.text === "Settings" ? "settingsItem" : undefined}
-            >
-              <div class="relative flex items-center justify-center w-full h-full">
-                <item.icon
-                  width="24"
-                  height="24"
-                  className="text-light-450 dark:text-dark-300 group-hover:text-light-500 dark:group-hover:text-dark-50 transition-colors"
-                />
-              </div>
-            </a>
-          </li>
-        ))
-      }
+      <li>
+        <a
+          href="/"
+          class="group flex items-center justify-center h-12 cursor-pointer transition-colors relative border-l-2 border-transparent"
+          aria-label="Profile"
+        >
+          <div class="relative flex items-center justify-center w-full h-full">
+            <ProfileIcon
+              width="24"
+              height="24"
+              className="text-light-450 dark:text-dark-300 group-hover:text-light-500 dark:group-hover:text-dark-50 transition-colors"
+            />
+          </div>
+        </a>
+      </li>
+      <li>
+        <button
+          id="settingsItem"
+          class="group flex items-center justify-center h-12 w-full cursor-pointer transition-colors relative border-l-2 border-transparent"
+          aria-label="Settings"
+        >
+          <div class="relative flex items-center justify-center w-full h-full">
+            <SettingsIcon
+              width="24"
+              height="24"
+              className="text-light-450 dark:text-dark-300 group-hover:text-light-500 dark:group-hover:text-dark-50 transition-colors"
+            />
+          </div>
+        </button>
+      </li>
     </ul>
   </nav>
 
   <ProjectsList />
 
-  <Modal />
+  <Modal id="settingsDialog" />
 
   <script type="module">
     document.addEventListener("DOMContentLoaded", () => {
@@ -96,17 +100,8 @@ const bottomItems: MenuItem[] = [
       const explorerItem = document.getElementById("explorerItem");
       const expandableContent = document.getElementById("expandableContent");
       const projectTree = document.getElementById("projectTree");
-      const settingsItem = document.getElementById("settingsItem");
-      const settingsModal = document.getElementById("settingsModal");
 
-      if (
-        !sidebar ||
-        !explorerItem ||
-        !expandableContent ||
-        !projectTree ||
-        !settingsItem ||
-        !settingsModal
-      ) {
+      if (!sidebar || !explorerItem || !expandableContent || !projectTree) {
         return;
       }
 
@@ -122,11 +117,6 @@ const bottomItems: MenuItem[] = [
         projectTree.classList.toggle("hidden", !isExpanded);
         updateActiveState(explorerItem);
         localStorage.setItem("sidebarExpanded", isExpanded ? "true" : "false");
-      });
-
-      settingsItem.addEventListener("click", (event) => {
-        event.preventDefault();
-        settingsModal.classList.remove("hidden");
       });
 
       document.addEventListener("click", (event) => {
@@ -147,6 +137,19 @@ const bottomItems: MenuItem[] = [
         isExpanded = false;
         expandableContent.style.width = "0";
         projectTree.classList.add("hidden");
+      }
+      const settingsItem = document.getElementById("settingsItem");
+      const settingsDialog = document.getElementById("settingsDialog");
+
+      if (settingsItem && settingsDialog instanceof HTMLDialogElement) {
+        settingsItem.addEventListener("click", () => {
+          settingsDialog.showModal();
+        });
+      }
+
+      const storedTheme = localStorage.getItem("theme");
+      if (storedTheme === "dark") {
+        document.documentElement.classList.add("dark");
       }
     });
   </script>
