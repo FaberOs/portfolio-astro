@@ -1,0 +1,105 @@
+---
+import { GITHUB_USER, BASE_URL } from "astro:env/server";
+import Layout from "@layouts/Layout.astro";
+
+const { id } = Astro.params;
+
+type Project = {
+  name: string;
+  html_url: string;
+  description: string | null;
+  language: string | null;
+  updated_at: string;
+  created_at: string;
+};
+
+const res = await fetch(`${BASE_URL}/repos/${GITHUB_USER}/${id}`);
+
+if (!res.ok) {
+  throw new Error("Proyecto no encontrado");
+}
+
+const project: Project = await res.json();
+
+const languagesRes = await fetch(
+  `${BASE_URL}/repos/${GITHUB_USER}/${id}/languages`
+);
+const languagesData: Record<string, number> = await languagesRes.json();
+const languages = Object.keys(languagesData);
+
+const deviconMap: Record<string, string> = {
+  JavaScript: "devicon-javascript-plain colored",
+  TypeScript: "devicon-typescript-plain colored",
+  Python: "devicon-python-plain colored",
+  Java: "devicon-java-plain colored",
+  Ruby: "devicon-ruby-plain colored",
+  Kotlin: "devicon-kotlin-plain colored",
+  CSS: "devicon-css3-plain colored",
+  HTML: "devicon-html5-plain colored",
+  React: "devicon-react-original colored",
+  NextJS: "devicon-nextjs-plain",
+};
+
+const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
+
+if (
+  languages.includes("JavaScript") &&
+  languages.includes("HTML") &&
+  languages.includes("CSS")
+) {
+  filteredLanguages.push("React");
+}
+
+if (languages.includes("TypeScript") && languages.includes("CSS")) {
+  filteredLanguages.push("NextJS");
+}
+---
+
+<Layout title={project.name}>
+  <div class="max-w-2xl mx-auto py-10 px-6">
+    <h1 class="text-3xl font-bold text-light-900 dark:text-dark-50">
+      {project.name}
+    </h1>
+    <p class="text-sm text-light-500 dark:text-dark-300 mt-2">
+      {new Date(project.created_at).toLocaleDateString()}
+    </p>
+    {
+      project.description && (
+        <p class="mt-4 text-light-600 dark:text-dark-200 text-base">
+          {project.description}
+        </p>
+      )
+    }
+    <div class="mt-6 text-light-500 dark:text-dark-300 text-sm">
+      {
+        filteredLanguages.length > 0 && (
+          <div class="mt-4">
+            <div class="flex gap-4 mt-2">
+              {filteredLanguages.map((lang) => (
+                <div class="flex items-center gap-2">
+                  <i
+                    class={`${deviconMap[lang]} text-base ${lang === "NextJS" ? "dark:text-light-50" : ""}`}
+                  />
+                  <span class="text-sm text-light-500 dark:text-dark-200">
+                    {lang}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </div>
+    <a
+      href={project.html_url}
+      target="_blank"
+      class="inline-block mt-6 px-4 py-2 bg-light-500 dark:bg-dark-400 text-light-50 dark:text-dark-50 rounded-md hover:bg-light-600 dark:hover:bg-dark-500 transition"
+    >
+      Ver en GitHub
+    </a>
+  </div>
+</Layout>
+
+<style>
+  @import url("https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css");
+</style>
