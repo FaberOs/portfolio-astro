@@ -1,6 +1,7 @@
 ---
 import { GITHUB_USER, BASE_URL } from "astro:env/server";
 import Layout from "@layouts/Layout.astro";
+import LinkIcon from "@icons/LinkIcon.astro";
 
 const { id } = Astro.params;
 
@@ -11,6 +12,7 @@ type Project = {
   language: string | null;
   updated_at: string;
   created_at: string;
+  homepage: string | null;
 };
 
 const res = await fetch(`${BASE_URL}/repos/${GITHUB_USER}/${id}`);
@@ -38,6 +40,7 @@ const deviconMap: Record<string, string> = {
   HTML: "devicon-html5-plain colored",
   React: "devicon-react-original colored",
   NextJS: "devicon-nextjs-plain",
+  Astro: "devicon-astro-plain colored",
 };
 
 const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
@@ -70,6 +73,20 @@ if (languages.includes("TypeScript") && languages.includes("CSS")) {
         </p>
       )
     }
+    {
+      project.homepage && (
+        <a
+          href={project.homepage}
+          target="_blank"
+          class="flex items-center gap-2 mt-4 text-sm"
+        >
+          <LinkIcon className="text-light-500 dark:text-dark-100" />
+          <span class="font-medium text-blue-700 dark:text-blue-500 ">
+            {project.homepage}
+          </span>
+        </a>
+      )
+    }
     <div class="mt-6 text-light-500 dark:text-dark-300 text-sm">
       {
         filteredLanguages.length > 0 && (
@@ -93,7 +110,7 @@ if (languages.includes("TypeScript") && languages.includes("CSS")) {
     <a
       href={project.html_url}
       target="_blank"
-      class="inline-block mt-6 px-4 py-2 bg-light-500 dark:bg-dark-400 text-light-50 dark:text-dark-50 rounded-md hover:bg-light-600 dark:hover:bg-dark-500 transition"
+      class="inline-block mt-6 px-4 py-2 border border-light-400 dark:border-dark-300 text-light-450 dark:text-dark-200 rounded-md hover:bg-light-200 dark:hover:bg-dark-500 transition"
     >
       Ver en GitHub
     </a>
