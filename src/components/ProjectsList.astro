@@ -1,0 +1,162 @@
+---
+import { GITHUB_USER_URL } from "astro:env/server";
+
+type Project = {
+  name: string;
+  html_url: string;
+  description: string | null;
+  language: string | null;
+  updated_at: string;
+  created_at: string;
+};
+
+const { pathname } = Astro.url;
+const activeProject = pathname.startsWith("/project/")
+  ? decodeURIComponent(pathname.split("/").pop() || "")
+  : "";
+
+const res = await fetch(`${GITHUB_USER_URL}/repos`);
+const projects: Project[] = await res.json();
+
+const projectsByYear = projects.reduce(
+  (acc, project) => {
+    const year = new Date(project.created_at).getFullYear();
+    acc[year] = acc[year] || [];
+    acc[year].push(project);
+    return acc;
+  },
+  {} as Record<number, Project[]>
+);
+
+const deviconMap: Record<string, string> = {
+  JavaScript: "devicon-javascript-plain colored",
+  TypeScript: "devicon-typescript-plain colored",
+  Python: "devicon-python-plain colored",
+  Java: "devicon-java-plain colored",
+  Ruby: "devicon-ruby-plain colored",
+  Kotlin: "devicon-kotlin-plain colored",
+  CSS: "devicon-css3-plain colored",
+  HTML: "devicon-html5-plain colored",
+};
+---
+
+<div
+  id="expandableContent"
+  class="w-0 max-h-screen overflow-hidden transition-all duration-300 bg-light-200 dark:bg-dark-700 overflow-y-auto"
+>
+  <div
+    id="projectTree"
+    class="hidden px-4 py-2 text-light-700 dark:text-light-300 text-sm overflow-y-auto"
+  >
+    <h3 class="text-xs text-light-400 dark:text-dark-400 mb-3">EXPLORER</h3>
+
+    {
+      Object.keys(projectsByYear)
+        .sort((a, b) => Number(b) - Number(a))
+        .map((year) => {
+          const isExpanded = projectsByYear[Number(year)].some(
+            (p) => p.name === activeProject
+          );
+          return (
+            <details class="mb-3" data-expanded={isExpanded} open={isExpanded}>
+              <summary class="cursor-pointer text-light-450 dark:text-dark-200 font-medium">
+                {year}
+              </summary>
+              <div class="mt-2 pl-4">
+                {projectsByYear[Number(year)].map((project) => {
+                  const isActive = project.name === activeProject;
+                  const iconClass = project.language
+                    ? deviconMap[project.language] || ""
+                    : "";
+
+                  return (
+                    <div class="mb-3 flex items-center gap-2">
+                      {iconClass && <i class={`${iconClass} text-sm`} />}
+                      <a
+                        href={`/project/${project.name}`}
+                        class={`block font-medium text-sm text-light-450 dark:text-dark-200 ${
+                          isActive
+                            ? "text-light-500 dark:text-white font-semibold"
+                            : ""
+                        }`}
+                      >
+                        {project.name}
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
+          );
+        })
+    }
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!window.location.pathname.startsWith("/project/")) {
+      localStorage.removeItem("activeProject");
+    }
+
+    const activeProject = localStorage.getItem("activeProject");
+    if (activeProject && window.location.pathname.startsWith("/project/")) {
+      document.querySelectorAll("a[href]").forEach((link) => {
+        if (link.getAttribute("href") === `/project/${activeProject}`) {
+          link.classList.add(
+            "text-light-500",
+            "dark:text-dark-50",
+            "font-semibold"
+          );
+          let detailsElement = link.closest("details");
+          if (detailsElement) {
+            detailsElement.setAttribute("open", "true");
+          }
+        }
+      });
+    }
+
+    document.querySelectorAll("a[href^='/project/']").forEach((link) => {
+      link.addEventListener("click", () => {
+        const href = link.getAttribute("href");
+        const projectName = href ? href.split("/").pop() : null;
+        if (projectName) {
+          localStorage.setItem("activeProject", projectName);
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  @import url("https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css");
+
+  #expandableContent {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.8s ease-in-out;
+  }
+
+  #expandableContent:hover {
+    scrollbar-color: rgba(100, 100, 100, 0.3) transparent;
+  }
+
+  #expandableContent::-webkit-scrollbar {
+    width: 10px;
+    min-width: 10px;
+  }
+
+  #expandableContent::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #expandableContent::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 0;
+    transition: background-color 0.8s ease-in-out;
+  }
+
+  #expandableContent:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 100, 100, 0.3);
+  }
+</style>

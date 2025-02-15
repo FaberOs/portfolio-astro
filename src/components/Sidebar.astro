@@ -1,0 +1,176 @@
+---
+import FilesIcon from "@icons/FilesIcon.astro";
+import SearchIcon from "@icons/SearchIcon.astro";
+import SControlIcon from "@icons/SControlIcon.astro";
+import DebugIcon from "@icons/DebugIcon.astro";
+import ExtensIcon from "@icons/ExtensIcon.astro";
+import GithubIcon from "@icons/GithubIcon.astro";
+import SettingsIcon from "@icons/SettingsIcon.astro";
+import ProfileIcon from "@icons/ProfileIcon.astro";
+
+import ProjectsList from "@components/ProjectsList.astro";
+import Modal from "@components/Modal.astro";
+
+const { class: className, ...rest } = Astro.props;
+
+interface MenuItem {
+  icon: typeof FilesIcon;
+  text: string;
+  href?: string;
+}
+
+const menuItems: MenuItem[] = [
+  { icon: FilesIcon, text: "Explorer" },
+  { icon: SearchIcon, text: "Search" },
+  { icon: SControlIcon, text: "Source Control" },
+  { icon: DebugIcon, text: "Run and Debug" },
+  { icon: ExtensIcon, text: "Extensions" },
+  { icon: GithubIcon, text: "Github" },
+];
+
+const bottomItems: MenuItem[] = [
+  { icon: ProfileIcon, text: "Profile", href: "/" },
+  { icon: SettingsIcon, text: "Settings" },
+];
+---
+
+<aside
+  class={`relative transition-all duration-300 flex bg-light-200 dark:bg-dark-700 border-r border-light-300 dark:border-dark-800 ${className || ""}`}
+  id="sidebar"
+  {...rest}
+>
+  <nav class="w-12 flex flex-col justify-between bg-light-300 dark:bg-dark-800">
+    <ul>
+      {
+        menuItems.map((item) => (
+          <li>
+            <button
+              class="group flex items-center justify-center h-12 w-full cursor-pointer transition-colors relative border-l-2 border-transparent data-[active=true]:border-light-500 dark:data-[active=true]:border-white"
+              aria-label={item.text}
+              id={item.text === "Explorer" ? "explorerItem" : undefined}
+            >
+              <div class="relative flex items-center justify-center w-full h-full">
+                <item.icon
+                  width="24"
+                  height="24"
+                  className="text-light-450 dark:text-dark-300 group-hover:text-light-500 dark:group-hover:text-dark-50 dark:group-data-[active=true]:text-white group-data-[active=true]:text-light-500 transition-colors"
+                />
+              </div>
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+
+    <ul>
+      {
+        bottomItems.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class="group flex items-center justify-center h-12 cursor-pointer transition-colors relative border-l-2 border-transparent data-[active=true]:border-light-500 dark:data-[active=true]:border-white"
+              aria-label={item.text}
+              id={item.text === "Settings" ? "settingsItem" : undefined}
+            >
+              <div class="relative flex items-center justify-center w-full h-full">
+                <item.icon
+                  width="24"
+                  height="24"
+                  className="text-light-450 dark:text-dark-300 group-hover:text-light-500 dark:group-hover:text-dark-50 transition-colors"
+                />
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <ProjectsList />
+
+  <Modal />
+
+  <script type="module">
+    document.addEventListener("DOMContentLoaded", () => {
+      const sidebar = document.getElementById("sidebar");
+      const explorerItem = document.getElementById("explorerItem");
+      const expandableContent = document.getElementById("expandableContent");
+      const projectTree = document.getElementById("projectTree");
+      const settingsItem = document.getElementById("settingsItem");
+      const settingsModal = document.getElementById("settingsModal");
+
+      if (
+        !sidebar ||
+        !explorerItem ||
+        !expandableContent ||
+        !projectTree ||
+        !settingsItem ||
+        !settingsModal
+      ) {
+        return;
+      }
+
+      let isExpanded = false;
+
+      const updateActiveState = (item) => {
+        item.dataset.active = "true";
+      };
+
+      explorerItem.addEventListener("click", () => {
+        isExpanded = !isExpanded;
+        expandableContent.style.width = isExpanded ? "250px" : "0";
+        projectTree.classList.toggle("hidden", !isExpanded);
+        updateActiveState(explorerItem);
+        localStorage.setItem("sidebarExpanded", isExpanded ? "true" : "false");
+      });
+
+      settingsItem.addEventListener("click", (event) => {
+        event.preventDefault();
+        settingsModal.classList.remove("hidden");
+      });
+
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        if (!settingsModal.contains(target) && !settingsItem.contains(target)) {
+          settingsModal.classList.add("hidden");
+        }
+      });
+
+      const storedState = localStorage.getItem("sidebarExpanded");
+      if (storedState === "true") {
+        isExpanded = true;
+        expandableContent.style.width = "250px";
+        projectTree.classList.remove("hidden");
+        updateActiveState(explorerItem);
+      } else {
+        isExpanded = false;
+        expandableContent.style.width = "0";
+        projectTree.classList.add("hidden");
+      }
+    });
+  </script>
+</aside>
+
+<style lang="postcss">
+  nav * {
+    transition: inherit;
+  }
+
+  [role="tooltip"] {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    transform: translateX(-5px);
+  }
+
+  .group:hover [role="tooltip"] {
+    transform: translateX(0);
+  }
+
+  aside > nav:first-child {
+    flex-grow: 1;
+  }
+
+  aside > nav:last-child {
+    margin-bottom: 1rem;
+  }
+</style>

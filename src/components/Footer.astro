@@ -1,0 +1,68 @@
+---
+import RemoteIcon from "@icons/RemoteIcon.astro";
+import RocketIcon from "@icons/RocketIcon.astro";
+import ErrorIcon from "@icons/ErrorIcon.astro";
+import WarningIcon from "@icons/WarningIcon.astro";
+import RadioTowerIcon from "@icons/RadioTowerIcon.astro";
+import BellIcon from "@icons/BellIcon.astro";
+---
+
+<footer
+  class="flex dark:bg-dark-700 bg-light-200 border-t border-light-300 dark:border-dark-900 text-dark-300 text-xs justify-between items-center"
+>
+  <div class="flex items-center">
+    <div
+      class="group flex items-center space-x-1 px-2 py-1 cursor-pointer
+                dark:hover:bg-active-300 hover:bg-active-800 hover:text-dark-800 transition-colors"
+    >
+      <RemoteIcon
+        className="dark:text-active-600 text-active-800 dark:group-hover:text-active-900 group-hover:text-light-50 transition-colors"
+        height="16"
+      />
+    </div>
+
+    <div class="group flex items-center space-x-1 px-2 py-1 cursor-pointer">
+      <RocketIcon
+        className="text-light-400 dark:text-dark-400 group-hover:text-light-500 dark:group-hover:text-white"
+        height="16"
+      />
+    </div>
+
+    <div class="group flex items-center space-x-1 px-2 py-1 cursor-pointer">
+      <ErrorIcon
+        className="text-light-400 dark:text-dark-400 group-hover:text-light-500 dark:group-hover:text-white"
+        height="16"
+      />
+      <span
+        class="text-light-400 dark:text-dark-400 group-hover:text-light-500 dark:group-hover:text-white"
+        >0</span
+      >
+
+      <WarningIcon
+        className="text-light-400 dark:text-dark-400 group-hover:text-light-500 dark:group-hover:text-white"
+        height="16"
+      />
+      <span
+        class="text-light-400 dark:text-dark-400 group-hover:text-light-500 dark:group-hover:text-white"
+        >0</span
+      >
+    </div>
+
+    <div class="group flex items-center space-x-1 px-2 py-1 cursor-pointer">
+      <RadioTowerIcon
+        className="text-light-400 dark:text-dark-400 group-hover:text-light-500 dark:group-hover:text-white"
+        height="16"
+      />
+      <span
+        class="text-light-400 dark:text-dark-400 group-hover:text-light-500 dark:group-hover:text-white"
+        >0</span
+      >
+    </div>
+  </div>
+
+  <div class="group px-3 py-1 cursor-pointer">
+    <BellIcon
+      className="text-light-400 dark:text-dark-400 group-hover:text-light-500 dark:group-hover:text-white"
+    />
+  </div>
+</footer>

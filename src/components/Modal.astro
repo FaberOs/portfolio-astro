@@ -1,0 +1,81 @@
+---
+import CloseIcon from "@icons/CloseIcon.astro";
+---
+
+<div
+  id="settingsModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-light-800 bg-opacity-50 dark:bg-dark-800 dark:bg-opacity-50 hidden"
+>
+  <div
+    class="relative bg-light-50 dark:bg-dark-800 text-dark-600 dark:text-light-50 rounded-lg p-6 w-full max-w-md mx-auto"
+  >
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-2xl font-bold">Settings</h2>
+      <button
+        id="closeModal"
+        class="group text-xl text-dark-600 dark:text-light-50"
+      >
+        <CloseIcon
+          height="16"
+          width="16"
+          className="group-hover:text-dark-300 dark:group-hover:text-light-300 transition-colors"
+        />
+      </button>
+    </div>
+    <hr class="border-light-300 dark:border-dark-500 mb-4" />
+    <div class="flex items-center justify-between mb-4">
+      <label class="block text-sm font-medium">Theme</label>
+      <div class="flex items-center space-x-2">
+        <button
+          id="lightTheme"
+          class="px-4 py-2 text-sm border border-light-300 dark:border-dark-500 rounded hover:bg-light-200 dark:hover:bg-dark-700 transition-colors"
+        >
+          Light
+        </button>
+        <button
+          id="darkTheme"
+          class="px-4 py-2 text-sm border border-light-300 dark:border-dark-500 rounded hover:bg-light-200 dark:hover:bg-dark-700 transition-colors"
+        >
+          Dark
+        </button>
+      </div>
+    </div>
+    <hr class="border-light-300 dark:border-dark-500 mb-4" />
+    <div class="mt-6 text-xs text-center">
+      <p>Version 1.0.0</p>
+      <p>Created by FaberOs</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const modal = document.getElementById("settingsModal");
+    if (!modal) return;
+
+    const closeModal = document.getElementById("closeModal");
+    if (closeModal) {
+      closeModal.addEventListener("click", () => {
+        modal.classList.add("hidden");
+      });
+    }
+
+    const lightThemeBtn = document.getElementById("lightTheme");
+    if (lightThemeBtn) {
+      lightThemeBtn.addEventListener("click", () => {
+        document.documentElement.classList.remove("dark");
+        modal.classList.add("hidden");
+        localStorage.setItem("theme", "light");
+      });
+    }
+
+    const darkThemeBtn = document.getElementById("darkTheme");
+    if (darkThemeBtn) {
+      darkThemeBtn.addEventListener("click", () => {
+        document.documentElement.classList.add("dark");
+        modal.classList.add("hidden");
+        localStorage.setItem("theme", "dark");
+      });
+    }
+  })();
+</script>
