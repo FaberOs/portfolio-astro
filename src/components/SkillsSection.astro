@@ -1,0 +1,36 @@
+---
+import SparklesIcon from "@icons/SparklesIcon.astro";
+
+const deviconMap: Record<string, string> = {
+  JavaScript: "devicon-javascript-plain colored",
+  TypeScript: "devicon-typescript-plain colored",
+  CSS: "devicon-css3-plain colored",
+  HTML: "devicon-html5-plain colored",
+  Astro: "devicon-astro-plain colored",
+  Tailwind: "devicon-tailwindcss-plain colored",
+  React: "devicon-react-original colored",
+  NextJS: "devicon-nextjs-plain",
+  Github: "devicon-github-original colored",
+};
+---
+
+<section
+  class="border border-light-300 dark:border-dark-400 rounded-lg p-4 text-light-500 dark:text-dark-200 text-sm space-y-4"
+>
+  <div class="flex items-center gap-2 text-light-600 dark:text-dark-100">
+    <SparklesIcon />
+    <h3 class="text-lg font-medium">Skills</h3>
+  </div>
+  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
+    {
+      Object.keys(deviconMap).map((skill) => (
+        <div class="flex items-center gap-2 bg-light-100 dark:bg-dark-500 p-2 rounded-md border border-light-300 dark:border-dark-400 min-w-0">
+          <i class={`${deviconMap[skill]} text-xl shrink-0`} />
+          <span class="flex-1 truncate text-sm text-light-600 dark:text-dark-200">
+            {skill}
+          </span>
+        </div>
+      ))
+    }
+  </div>
+</section>
