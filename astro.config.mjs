@@ -3,13 +3,12 @@ import { defineConfig, envField } from "astro/config";
 
 import tailwind from "@astrojs/tailwind";
 
-import vercel from "@astrojs/vercel";
+import netlify from "@astrojs/netlify";
 
 // https://astro.build/config
 export default defineConfig({
   output: "server",
   integrations: [tailwind()],
-
   env: {
     schema: {
       GITHUB_USER_URL: envField.string({ context: "server", access: "public" }),
@@ -18,5 +17,5 @@ export default defineConfig({
     },
   },
 
-  adapter: vercel(),
+  adapter: netlify(),
 });
