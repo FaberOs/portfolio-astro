@@ -44,18 +44,6 @@ const deviconMap: Record<string, string> = {
 };
 
 const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
-
-if (
-  languages.includes("JavaScript") &&
-  languages.includes("HTML") &&
-  languages.includes("CSS")
-) {
-  filteredLanguages.push("React");
-}
-
-if (languages.includes("TypeScript") && languages.includes("CSS")) {
-  filteredLanguages.push("NextJS");
-}
 ---
 
 <Layout title={project.name}>
