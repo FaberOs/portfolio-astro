@@ -22,7 +22,7 @@ const res = await fetch(`${BASE_URL}/users/${GITHUB_USER}`);
 const user: User = await res.json();
 ---
 
-<div class="text-center p-2">
+<div class="text-center">
   <img
     src={user.avatar_url}
     alt={`Avatar de ${user.name}`}

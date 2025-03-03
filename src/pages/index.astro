@@ -5,9 +5,9 @@ import { GITHUB_USER } from "astro:env/server";
 import UserInfo from "@components/UserInfo.astro";
 import ProjectsSection from "@components/ProjectsSection.astro";
 import SkillsSection from "@components/SkillsSection.astro";
+import Overview from "@components/Overview.astro";
 
 import Layout from "../layouts/Layout.astro";
-import BookIcon from "@icons/BookIcon.astro";
 import CurvedArrow from "@icons/CurvedArrow.astro";
 
 const res = await fetch(`${BASE_URL}/users/${GITHUB_USER}`);
@@ -27,32 +27,19 @@ const res = await fetch(`${BASE_URL}/users/${GITHUB_USER}`);
     </div>
 
     <div
-      class="mt-10 max-w-4xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 items-center"
+      class="mt-10 mb-4 max-w-4xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 items-center space-y-4"
     >
-      <UserInfo />
+      <div class="mx-4">
+        <UserInfo />
+      </div>
 
-      <div class="space-y-4">
-        <div
-          class="border border-light-300 dark:border-dark-400 rounded-lg p-4 text-light-500 dark:text-dark-200 text-sm space-y-2"
-        >
-          <div
-            class="flex items-center gap-2 text-light-600 dark:text-dark-100"
-          >
-            <BookIcon />
-            <h3 class="text-lg font-medium">Overview</h3>
-          </div>
-          <p class="text-light-600 dark:text-dark-200">
-            Desarrollador Frontend con experiencia en React, Next.js y
-            TypeScript. Enfocado en UI/UX y diseño de producto con Figma,
-            optimizando productos y MVPs. Con conocimientos en la creación de
-            landing pages con Astro.
-          </p>
-        </div>
+      <div class="space-y-4 mx-4 xl:mx-0 lg:mx-0">
+        <Overview />
 
         <SkillsSection />
       </div>
 
-      <div>
+      <div class="mx-4">
         <ProjectsSection />
       </div>
     </div>
