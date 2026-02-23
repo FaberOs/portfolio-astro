@@ -1,0 +1,84 @@
+---
+import RepoIcon from "@icons/RepoIcon.astro";
+import LinkIcon from "@icons/LinkIcon.astro";
+
+export interface Props {
+  name: string;
+  description: string | null;
+  language: string | null;
+  homepage: string | null;
+  createdAt: string;
+}
+
+const { name, description, language, homepage, createdAt } = Astro.props;
+
+const deviconMap: Record<string, string> = {
+  JavaScript: "devicon-javascript-plain colored",
+  TypeScript: "devicon-typescript-plain colored",
+  Python: "devicon-python-plain colored",
+  Java: "devicon-java-plain colored",
+  Ruby: "devicon-ruby-plain colored",
+  Kotlin: "devicon-kotlin-plain colored",
+  CSS: "devicon-css3-plain colored",
+  HTML: "devicon-html5-plain colored",
+  Astro: "devicon-astro-plain colored",
+};
+
+const iconClass = language ? deviconMap[language] || "" : "";
+const year = new Date(createdAt).getFullYear();
+---
+
+<a
+  href={`/project/${name}`}
+  class="group flex flex-col justify-between rounded-lg border border-light-300 dark:border-dark-400
+    bg-light-50 dark:bg-dark-600 p-5 transition-all duration-200
+    hover:border-light-400 dark:hover:border-dark-300
+    hover:shadow-md dark:hover:shadow-dark-900/40"
+>
+  <div>
+    <div class="flex items-center gap-2 mb-3">
+      <RepoIcon
+        className="text-light-400 dark:text-dark-300 shrink-0"
+        width="16"
+        height="16"
+      />
+      <h4
+        class="text-sm font-semibold text-blue-700 dark:text-blue-400 group-hover:underline underline-offset-2 truncate"
+      >
+        {name}
+      </h4>
+    </div>
+
+    <p class="text-xs text-light-500 dark:text-dark-200 line-clamp-2 min-h-[2rem]">
+      {description || "Sin descripción"}
+    </p>
+  </div>
+
+  <div class="flex items-center justify-between mt-4 pt-3 border-t border-light-300 dark:border-dark-400">
+    <div class="flex items-center gap-2">
+      {
+        iconClass && (
+          <i class={`${iconClass} text-sm`} aria-hidden="true" />
+        )
+      }
+      <span class="text-xs text-light-500 dark:text-dark-300">
+        {language || "—"}
+      </span>
+    </div>
+
+    <div class="flex items-center gap-3">
+      {
+        homepage && (
+          <span class="text-light-400 dark:text-dark-300" title="Tiene demo">
+            <LinkIcon width="14" height="14" />
+          </span>
+        )
+      }
+      <span class="text-xs text-light-400 dark:text-dark-300">{year}</span>
+    </div>
+  </div>
+</a>
+
+<style>
+  @import url("https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css");
+</style>

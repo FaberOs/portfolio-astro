@@ -1,0 +1,69 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Dark mode basado en clase .dark (como en Tailwind v3 darkMode: "class") */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tema personalizado - colores migrados desde tailwind.config.mjs */
+@theme {
+  /* Primary */
+  --color-primary-50: #FFF8E1;
+  --color-primary-100: #FFECB3;
+  --color-primary-200: #FFE082;
+  --color-primary-300: #FFD54F;
+  --color-primary-400: #FFCA28;
+  --color-primary-500: #FFD866;
+  --color-primary-600: #FFC300;
+  --color-primary-700: #FFAB00;
+  --color-primary-800: #FF9100;
+  --color-primary-900: #FF6F00;
+
+  /* Active */
+  --color-active-50: #F2FBEA;
+  --color-active-100: #E3F6D0;
+  --color-active-200: #C8EFA4;
+  --color-active-300: #ADE87B;
+  --color-active-400: #92E158;
+  --color-active-500: #A9DC6D;
+  --color-active-600: #86C053;
+  --color-active-700: #6EA944;
+  --color-active-800: #578E36;
+  --color-active-900: #3A5F22;
+
+  /* Dark */
+  --color-dark-50: #C1C0C0;
+  --color-dark-100: #A7A6A6;
+  --color-dark-200: #8D8B8D;
+  --color-dark-300: #727072;
+  --color-dark-400: #5B595C;
+  --color-dark-500: #403E41;
+  --color-dark-600: #2D2A2E;
+  --color-dark-700: #221F22;
+  --color-dark-800: #19181A;
+  --color-dark-900: #121112;
+
+  /* Light */
+  --color-light-50: #FEFAF9;
+  --color-light-100: #FAF4F2;
+  --color-light-200: #EDE7E5;
+  --color-light-300: #E0DAD9;
+  --color-light-400: #BFB9BA;
+  --color-light-450: #918c8e;
+  --color-light-500: #706B6E;
+  --color-light-600: #29242A;
+  --color-light-700: #211E22;
+  --color-light-800: #1A181C;
+  --color-light-900: #141216;
+
+  /* Danger */
+  --color-danger-50: #FDF3F5;
+  --color-danger-100: #FBE8EC;
+  --color-danger-200: #F5C6D1;
+  --color-danger-300: #EFA3B5;
+  --color-danger-400: #E175A1;
+  --color-danger-500: #E14775;
+  --color-danger-600: #B54D62;
+  --color-danger-700: #8F3A4B;
+  --color-danger-800: #692733;
+  --color-danger-900: #45161E;
+}

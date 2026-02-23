@@ -18,7 +18,7 @@ type Project = {
 const res = await fetch(`${BASE_URL}/repos/${GITHUB_USER}/${id}`);
 
 if (!res.ok) {
-  throw new Error("Proyecto no encontrado");
+  return Astro.rewrite('/404');
 }
 
 const project: Project = await res.json();
@@ -28,6 +28,30 @@ const languagesRes = await fetch(
 );
 const languagesData: Record<string, number> = await languagesRes.json();
 const languages = Object.keys(languagesData);
+
+// Fetch README rendered as HTML from GitHub API
+let readmeHtml: string | null = null;
+try {
+  const readmeRes = await fetch(
+    `${BASE_URL}/repos/${GITHUB_USER}/${id}/readme`,
+    {
+      headers: {
+        Accept: "application/vnd.github.html+json",
+      },
+    }
+  );
+  if (readmeRes.ok) {
+    const raw = await readmeRes.text();
+    // Inject lazy loading on all <img> tags so native browser lazy-loading
+    // is used (equivalent performance benefit to Astro's <Image> for remote images)
+    readmeHtml = raw.replace(
+      /<img(\s)/gi,
+      '<img loading="lazy" decoding="async"$1'
+    );
+  }
+} catch {
+  // README not available, that's fine
+}
 
 const deviconMap: Record<string, string> = {
   JavaScript: "devicon-javascript-plain colored",
@@ -47,7 +71,7 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
 ---
 
 <Layout title={project.name}>
-  <div class="max-w-2xl mx-auto py-10 px-6">
+  <div class="max-w-3xl mx-auto py-10 px-6">
     <h1 class="text-3xl font-bold text-light-900 dark:text-dark-50">
       {project.name}
     </h1>
@@ -69,7 +93,7 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
           class="flex items-center gap-2 mt-4 text-sm"
         >
           <LinkIcon className="text-light-500 dark:text-dark-100" />
-          <span class="font-medium text-blue-700 dark:text-blue-500 ">
+          <span class="font-medium text-blue-700 dark:text-blue-500">
             {project.homepage}
           </span>
         </a>
@@ -84,6 +108,7 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
                 <div class="flex items-center gap-2">
                   <i
                     class={`${deviconMap[lang]} text-base ${lang === "NextJS" ? "dark:text-light-50" : ""}`}
+                    aria-hidden="true"
                   />
                   <span class="text-sm text-light-500 dark:text-dark-200">
                     {lang}
@@ -102,9 +127,168 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
     >
       Ver en GitHub
     </a>
+
+    {
+      readmeHtml && (
+        <div class="mt-10 border-t border-light-300 dark:border-dark-400 pt-8">
+          <article
+            id="readme-article"
+            class="readme-content prose prose-sm max-w-none
+              prose-headings:text-light-700 dark:prose-headings:text-dark-100
+              prose-headings:border-b prose-headings:border-light-300 dark:prose-headings:border-dark-400 prose-headings:pb-2
+              prose-p:text-light-600 dark:prose-p:text-dark-200
+              prose-a:text-blue-700 dark:prose-a:text-blue-400 prose-a:underline-offset-2
+              prose-strong:text-light-700 dark:prose-strong:text-dark-100
+              prose-code:text-rose-600 dark:prose-code:text-dark-200
+              prose-code:bg-light-300 dark:prose-code:bg-dark-500
+              prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
+              prose-pre:bg-light-800 dark:prose-pre:bg-dark-600
+              prose-pre:text-light-50 dark:prose-pre:text-dark-100
+              prose-pre:border prose-pre:border-light-300 dark:prose-pre:border-dark-400
+              prose-pre:rounded-lg
+              prose-img:rounded-lg prose-img:shadow-md
+              prose-blockquote:border-l-4 prose-blockquote:border-light-400 dark:prose-blockquote:border-dark-400
+              prose-blockquote:text-light-500 dark:prose-blockquote:text-dark-300
+              prose-blockquote:bg-light-100 dark:prose-blockquote:bg-dark-500 prose-blockquote:rounded-r-lg prose-blockquote:py-1
+              prose-li:text-light-600 dark:prose-li:text-dark-200
+              prose-li:marker:text-light-400 dark:prose-li:marker:text-dark-300
+              prose-hr:border-light-300 dark:prose-hr:border-dark-400
+              prose-th:text-light-700 dark:prose-th:text-dark-100
+              prose-td:text-light-600 dark:prose-td:text-dark-200"
+            set:html={readmeHtml}
+          />
+        </div>
+      )
+    }
   </div>
 </Layout>
 
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const article = document.getElementById("readme-article");
+    if (!article) return;
+
+    // Handle anchor links: scroll smoothly instead of changing URL
+    article.querySelectorAll('a[href^="#"]').forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const href = link.getAttribute("href");
+        if (!href || href === "#") return;
+
+        const targetId = href.slice(1);
+        // GitHub adds "user-content-" prefix to heading IDs in rendered HTML
+        const target =
+          document.getElementById(`user-content-${targetId}`) ||
+          document.getElementById(targetId) ||
+          article.querySelector(`[name="${targetId}"]`);
+
+        if (target) {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+          // Update hash without triggering navigation
+          history.replaceState(null, "", href);
+        }
+      });
+    });
+
+    // Make external links open in new tab
+    article.querySelectorAll('a[href^="http"]').forEach((link) => {
+      link.setAttribute("target", "_blank");
+      link.setAttribute("rel", "noopener noreferrer");
+    });
+
+    // Fix code blocks: remove prose-code styles from code inside pre (block code)
+    article.querySelectorAll("pre code").forEach((code) => {
+      code.classList.add("!bg-transparent", "!p-0", "!text-inherit", "!text-sm", "!rounded-none");
+    });
+  });
+</script>
+
 <style>
   @import url("https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css");
+
+  /* Images */
+  .readme-content :global(img) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Code blocks */
+  .readme-content :global(pre) {
+    overflow-x: auto;
+    padding: 1rem;
+  }
+
+  .readme-content :global(pre code) {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    color: inherit !important;
+    font-size: 0.8125rem !important;
+  }
+
+  /* Tables */
+  .readme-content :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+  }
+
+  .readme-content :global(th) {
+    background-color: var(--color-light-200);
+    font-weight: 600;
+  }
+
+  :global(.dark) .readme-content :global(th) {
+    background-color: var(--color-dark-500);
+  }
+
+  .readme-content :global(th),
+  .readme-content :global(td) {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--color-light-300);
+  }
+
+  :global(.dark) .readme-content :global(th),
+  :global(.dark) .readme-content :global(td) {
+    border-color: var(--color-dark-400);
+  }
+
+  /* Headings: smooth scroll target offset */
+  .readme-content :global(h1),
+  .readme-content :global(h2),
+  .readme-content :global(h3),
+  .readme-content :global(h4),
+  .readme-content :global(h5),
+  .readme-content :global(h6) {
+    scroll-margin-top: 4rem;
+  }
+
+  /* Anchor icon links (GitHub adds SVG anchor links to headings) */
+  .readme-content :global(a.anchor) {
+    display: none;
+  }
+
+  /* Badge images inline */
+  .readme-content :global(a > img) {
+    display: inline-block;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0.25rem;
+  }
+
+  /* Task lists */
+  .readme-content :global(.contains-task-list) {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .readme-content :global(.task-list-item) {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .readme-content :global(.task-list-item input[type="checkbox"]) {
+    pointer-events: none;
+  }
 </style>

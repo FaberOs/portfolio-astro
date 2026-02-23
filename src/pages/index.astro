@@ -1,16 +1,13 @@
 ---
-import { BASE_URL } from "astro:env/server";
 import { GITHUB_USER } from "astro:env/server";
 
 import UserInfo from "@components/UserInfo.astro";
-import ProjectsSection from "@components/ProjectsSection.astro";
 import SkillsSection from "@components/SkillsSection.astro";
 import Overview from "@components/Overview.astro";
+import ProjectsGrid from "@components/ProjectsGrid.astro";
 
 import Layout from "../layouts/Layout.astro";
 import CurvedArrow from "@icons/CurvedArrow.astro";
-
-const res = await fetch(`${BASE_URL}/users/${GITHUB_USER}`);
 ---
 
 <Layout title={`${GITHUB_USER} - Portfolio`}>
@@ -38,10 +35,15 @@ const res = await fetch(`${BASE_URL}/users/${GITHUB_USER}`);
 
         <SkillsSection />
       </div>
+    </div>
 
-      <div class="mx-4">
-        <ProjectsSection />
-      </div>
+    <div
+      class="w-full max-w-5xl mx-auto my-8 border-t border-light-300 dark:border-dark-400"
+    >
+    </div>
+
+    <div class="w-full pb-10">
+      <ProjectsGrid />
     </div>
   </div>
 </Layout>
