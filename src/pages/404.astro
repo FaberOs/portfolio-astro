@@ -1,0 +1,29 @@
+---
+import Layout from "@layouts/Layout.astro";
+import ErrorIcon from "@icons/ErrorIcon.astro";
+---
+
+<Layout title="404 — No encontrado">
+  <div class="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-6 text-center">
+    <div class="text-light-400 dark:text-dark-300 mb-6">
+      <ErrorIcon className="w-20 h-20 mx-auto" />
+    </div>
+
+    <h1 class="text-6xl font-bold text-light-700 dark:text-dark-100 mb-2">
+      404
+    </h1>
+    <p class="text-xl text-light-500 dark:text-dark-200 mb-2">
+      Página no encontrada
+    </p>
+    <p class="text-sm text-light-400 dark:text-dark-300 max-w-md mb-8">
+      El recurso que buscas no existe o fue movido. Verifica la URL o vuelve al inicio.
+    </p>
+
+    <a
+      href="/"
+      class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-md border border-light-400 dark:border-dark-300 text-light-600 dark:text-dark-100 hover:bg-light-200 dark:hover:bg-dark-500 transition"
+    >
+      Volver al inicio
+    </a>
+  </div>
+</Layout>

@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import { GITHUB_USER } from "astro:env/server";
 import { BASE_URL } from "astro:env/server";
 
@@ -18,80 +19,100 @@ type User = {
   company: string | null;
 };
 
-const res = await fetch(`${BASE_URL}/users/${GITHUB_USER}`);
-const user: User = await res.json();
+let user: User | null = null;
+try {
+  const res = await fetch(`${BASE_URL}/users/${GITHUB_USER}`);
+  if (res.ok) {
+    user = await res.json();
+  }
+} catch {
+  // API request failed
+}
 ---
 
-<div class="text-center">
-  <img
-    src={user.avatar_url}
-    alt={`Avatar de ${user.name}`}
-    class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full shadow-lg"
-  />
-  <h1
-    class="text-2xl md:text-3xl font-bold mt-4 text-light-500 dark:text-dark-100"
-  >
-    {user.name}
-  </h1>
-  <a
-    href={user.html_url}
-    target="_blank"
-    class="text-light-450 dark:text-dark-200 hover:underline"
-  >
-    @{user.login}
-  </a>
-
-  <div class="mt-4 space-y-4 text-light-500 dark:text-dark-200 text-sm">
-    <div
-      class="flex flex-col sm:flex-row sm:gap-6 sm:justify-center border border-light-300 dark:border-dark-400 p-4 rounded-lg"
+{user ? (
+  <div class="text-center">
+    <Image
+      src={user.avatar_url}
+      alt={`Avatar de ${user.name}`}
+      inferSize
+      loading="eager"
+      class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full shadow-lg"
+    />
+    <h1
+      class="text-2xl md:text-3xl font-bold mt-4 text-light-500 dark:text-dark-100"
     >
-      {
-        user.company && (
-          <p class="flex items-center justify-center sm:justify-center">
-            <OrganizationIcon className="mr-2" /> {user.company}
-          </p>
-        )
-      }
-      {
-        user.location && (
-          <p class="flex items-center justify-center sm:justify-center">
-            <LocationIcon className="mr-1" /> {user.location}
-          </p>
-        )
-      }
-    </div>
-
-    <div
-      class="flex items-center justify-center gap-4 border border-light-300 dark:border-dark-400 p-4 rounded-lg"
+      {user.name}
+    </h1>
+    <a
+      href={user.html_url}
+      target="_blank"
+      class="text-light-450 dark:text-dark-200 hover:underline"
     >
-      <a
-        href="mailto:fospina@unicauca.edu.co"
-        target="_blank"
-        class="h-10 w-10 rounded-md flex items-center justify-center border border-light-300 dark:border-dark-400 bg-light-100 dark:bg-dark-500 text-light-500 dark:text-dark-200 hover:bg-light-400 dark:hover:bg-dark-500"
+      @{user.login}
+    </a>
+
+    <div class="mt-4 space-y-4 text-light-500 dark:text-dark-200 text-sm">
+      <div
+        class="flex flex-col sm:flex-row sm:gap-6 sm:justify-center border border-light-300 dark:border-dark-400 p-4 rounded-lg"
       >
-        <EmailIcon className="w-6 h-6" />
-      </a>
-      <a
-        href="https://www.linkedin.com/in/faberospinacortes/"
-        target="_blank"
-        class="h-10 w-10 rounded-md flex items-center justify-center border border-light-300 dark:border-dark-400 bg-light-100 dark:bg-dark-500 text-light-500 dark:text-dark-200 hover:bg-light-400 dark:hover:bg-dark-500"
+        {
+          user.company && (
+            <p class="flex items-center justify-center sm:justify-center">
+              <OrganizationIcon className="mr-2" /> {user.company}
+            </p>
+          )
+        }
+        {
+          user.location && (
+            <p class="flex items-center justify-center sm:justify-center">
+              <LocationIcon className="mr-1" /> {user.location}
+            </p>
+          )
+        }
+      </div>
+
+      <div
+        class="flex items-center justify-center gap-4 border border-light-300 dark:border-dark-400 p-4 rounded-lg"
       >
-        <LinkedinIcon className="w-5 h-5" />
-      </a>
-      <a
-        href="https://github.com/FaberOs"
-        target="_blank"
-        class="h-10 w-10 rounded-md flex items-center justify-center border border-light-300 dark:border-dark-400 bg-light-100 dark:bg-dark-500 text-light-500 dark:text-dark-200 hover:bg-light-400 dark:hover:bg-dark-500"
-      >
-        <GithubIcon className="w-6 h-6" />
-      </a>
-      <a
-        href="https://x.com/FaberOspina23"
-        target="_blank"
-        class="h-10 w-10 rounded-md flex items-center justify-center border border-light-300 dark:border-dark-400 bg-light-100 dark:bg-dark-500 text-light-500 dark:text-dark-200 hover:bg-light-400 dark:hover:bg-dark-500"
-      >
-        <XIcon className="w-5 h-5" />
-      </a>
+        <a
+          href="mailto:fospina@unicauca.edu.co"
+          target="_blank"
+          aria-label="Enviar email"
+          class="h-10 w-10 rounded-md flex items-center justify-center border border-light-300 dark:border-dark-400 bg-light-100 dark:bg-dark-500 text-light-500 dark:text-dark-200 hover:bg-light-400 dark:hover:bg-dark-500"
+        >
+          <EmailIcon className="w-6 h-6" />
+        </a>
+        <a
+          href="https://www.linkedin.com/in/faberospinacortes/"
+          target="_blank"
+          aria-label="Perfil de LinkedIn"
+          class="h-10 w-10 rounded-md flex items-center justify-center border border-light-300 dark:border-dark-400 bg-light-100 dark:bg-dark-500 text-light-500 dark:text-dark-200 hover:bg-light-400 dark:hover:bg-dark-500"
+        >
+          <LinkedinIcon className="w-5 h-5" />
+        </a>
+        <a
+          href="https://github.com/FaberOs"
+          target="_blank"
+          aria-label="Perfil de GitHub"
+          class="h-10 w-10 rounded-md flex items-center justify-center border border-light-300 dark:border-dark-400 bg-light-100 dark:bg-dark-500 text-light-500 dark:text-dark-200 hover:bg-light-400 dark:hover:bg-dark-500"
+        >
+          <GithubIcon className="w-6 h-6" />
+        </a>
+        <a
+          href="https://x.com/FaberOspina23"
+          target="_blank"
+          aria-label="Perfil de X"
+          class="h-10 w-10 rounded-md flex items-center justify-center border border-light-300 dark:border-dark-400 bg-light-100 dark:bg-dark-500 text-light-500 dark:text-dark-200 hover:bg-light-400 dark:hover:bg-dark-500"
+        >
+          <XIcon className="w-5 h-5" />
+        </a>
+      </div>
     </div>
   </div>
-</div>
+) : (
+  <div class="text-center py-8">
+    <div class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full bg-light-300 dark:bg-dark-500 animate-pulse"></div>
+    <p class="mt-4 text-light-400 dark:text-dark-300 text-sm">No se pudo cargar la información del usuario.</p>
+  </div>
+)}

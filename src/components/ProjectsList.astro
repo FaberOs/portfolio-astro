@@ -15,8 +15,16 @@ const activeProject = pathname.startsWith("/project/")
   ? decodeURIComponent(pathname.split("/").pop() || "")
   : "";
 
-const res = await fetch(`${GITHUB_USER_URL}/repos`);
-const projects: Project[] = await res.json();
+let projects: Project[] = [];
+try {
+  const res = await fetch(`${GITHUB_USER_URL}/repos`);
+  if (res.ok) {
+    const data = await res.json();
+    projects = Array.isArray(data) ? data : [];
+  }
+} catch {
+  // API request failed
+}
 
 const projectsByYear = projects.reduce(
   (acc, project) => {
@@ -72,9 +80,10 @@ const deviconMap: Record<string, string> = {
 
                   return (
                     <div class="mb-3 flex items-center gap-2">
-                      {iconClass && <i class={`${iconClass} text-sm`} />}
+                      {iconClass && <i class={`${iconClass} text-sm`} aria-hidden="true" />}
                       <a
                         href={`/project/${project.name}`}
+                        aria-label={project.name}
                         class={`block font-medium text-sm text-light-450 dark:text-dark-200 ${
                           isActive
                             ? "text-light-500 dark:text-white font-semibold"
