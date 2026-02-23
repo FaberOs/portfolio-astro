@@ -11,6 +11,9 @@ importers:
       '@astrojs/netlify':
         specifier: ^6.6.4
         version: 6.6.4(@types/node@25.3.0)(@vercel/functions@2.2.13)(astro@5.17.3(@netlify/blobs@10.7.0)(@types/node@25.3.0)(@vercel/functions@2.2.13)(jiti@2.6.1)(lightningcss@1.31.1)(rollup@4.59.0)(typescript@5.7.3)(yaml@2.8.2))(jiti@2.6.1)(lightningcss@1.31.1)(rollup@4.59.0)(yaml@2.8.2)
+      '@tailwindcss/oxide-linux-x64-gnu':
+        specifier: ^4.2.1
+        version: 4.2.1
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.2.0)
@@ -1243,6 +1246,12 @@ packages:
 
   '@tailwindcss/oxide-linux-x64-gnu@4.2.0':
     resolution: {integrity: sha512-/hlXCBqn9K6fi7eAM0RsobHwJYa5V/xzWspVTzxnX+Ft9v6n+30Pz8+RxCn7sQL/vRHHLS30iQPrHQunu6/vJA==}
+    engines: {node: '>= 20'}
+    cpu: [x64]
+    os: [linux]
+
+  '@tailwindcss/oxide-linux-x64-gnu@4.2.1':
+    resolution: {integrity: sha512-qMFzxI2YlBOLW5PhblzuSWlWfwLHaneBE0xHzLrBgNtqN6mWfs+qYbhryGSXQjFYB1Dzf5w+LN5qbUTPhW7Y5g==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [linux]
@@ -5246,6 +5255,8 @@ snapshots:
 
   '@tailwindcss/oxide-linux-x64-gnu@4.2.0':
     optional: true
+
+  '@tailwindcss/oxide-linux-x64-gnu@4.2.1': {}
 
   '@tailwindcss/oxide-linux-x64-musl@4.2.0':
     optional: true
