@@ -128,15 +128,15 @@ const menuItems: MenuItem[] = [
       });
 
       const storedState = localStorage.getItem("sidebarExpanded");
-      if (storedState === "true") {
+      if (storedState === "false") {
+        isExpanded = false;
+        expandableContent.style.width = "0";
+        projectTree.classList.add("hidden");
+      } else {
         isExpanded = true;
         expandableContent.style.width = "250px";
         projectTree.classList.remove("hidden");
         updateActiveState(explorerItem);
-      } else {
-        isExpanded = false;
-        expandableContent.style.width = "0";
-        projectTree.classList.add("hidden");
       }
       const settingsItem = document.getElementById("settingsItem");
       const settingsDialog = document.getElementById("settingsDialog");

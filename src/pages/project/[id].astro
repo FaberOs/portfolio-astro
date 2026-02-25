@@ -1,5 +1,6 @@
 ---
 import { GITHUB_USER, BASE_URL } from "astro:env/server";
+import { getImage } from "astro:assets";
 import Layout from "@layouts/Layout.astro";
 import LinkIcon from "@icons/LinkIcon.astro";
 
@@ -41,9 +42,56 @@ try {
     }
   );
   if (readmeRes.ok) {
-    const raw = await readmeRes.text();
-    // Inject lazy loading on all <img> tags so native browser lazy-loading
-    // is used (equivalent performance benefit to Astro's <Image> for remote images)
+    let raw = await readmeRes.text();
+
+    // Fix image src URLs: relative paths and GitHub blob URLs won't load
+    // outside of github.com — rewrite them to raw.githubusercontent.com
+    raw = raw.replace(
+      /(<img[^>]+src=")([^"]+)(")/gi,
+      (_match, prefix, src, suffix) => {
+        // Relative path (e.g. "assets/img.png" or "/assets/img.png")
+        if (!src.startsWith("http") && !src.startsWith("data:") && !src.startsWith("//")) {
+          const cleanPath = src.startsWith("/") ? src.slice(1) : src;
+          return `${prefix}https://raw.githubusercontent.com/${GITHUB_USER}/${id}/HEAD/${cleanPath}${suffix}`;
+        }
+        // GitHub blob URL (e.g. https://github.com/user/repo/blob/main/assets/img.png)
+        if (/https?:\/\/github\.com\/[^/]+\/[^/]+\/blob\//.test(src)) {
+          const rawSrc = src
+            .replace("https://github.com/", "https://raw.githubusercontent.com/")
+            .replace("/blob/", "/");
+          return `${prefix}${rawSrc}${suffix}`;
+        }
+        return _match;
+      }
+    );
+
+    // Remove <a> wrappers that only contain an <img> so clicking an image
+    // does not navigate to the image URL
+    raw = raw.replace(/<a\b[^>]*>\s*(<img\b[^>]*\/?>\s*)<\/a>/gi, "$1");
+
+    // Optimize images through Astro's image service (resolves "Use Image component" hint)
+    // Only process absolute https URLs — relative / data URIs are left as-is
+    const imgMatches = [...raw.matchAll(/<img[^>]+src="(https:\/\/[^"]+)"/gi)];
+    const uniqueUrls = [...new Set(imgMatches.map((m) => m[1]))];
+
+    const optimizedMap = new Map<string, string>();
+    for (const url of uniqueUrls) {
+      try {
+        const optimized = await getImage({ src: url, inferSize: true });
+        optimizedMap.set(url, optimized.src);
+      } catch {
+        // Optimization failed (unknown dimensions etc.) — keep original URL
+      }
+    }
+
+    if (optimizedMap.size > 0) {
+      raw = raw.replace(/<img([^>]+)src="(https:\/\/[^"]+)"/gi, (match, before, src) => {
+        const optimized = optimizedMap.get(src);
+        return optimized ? `<img${before}src="${optimized}"` : match;
+      });
+    }
+
+    // Inject lazy loading on all <img> tags
     readmeHtml = raw.replace(
       /<img(\s)/gi,
       '<img loading="lazy" decoding="async"$1'
@@ -72,15 +120,15 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
 
 <Layout title={project.name}>
   <div class="max-w-3xl mx-auto py-10 px-6">
-    <h1 class="text-3xl font-bold text-light-900 dark:text-dark-50">
+    <h1 class="text-3xl font-bold text-light-900 dark:text-[#E5E3E5]">
       {project.name}
     </h1>
-    <p class="text-sm text-light-500 dark:text-dark-300 mt-2">
+    <p class="text-sm text-light-500 dark:text-[#A0A0A0] mt-2">
       {new Date(project.created_at).toLocaleDateString()}
     </p>
     {
       project.description && (
-        <p class="mt-4 text-light-600 dark:text-dark-200 text-base">
+        <p class="mt-4 text-light-600 dark:text-[#C8C6C8] text-base">
           {project.description}
         </p>
       )
@@ -110,7 +158,7 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
                     class={`${deviconMap[lang]} text-base ${lang === "NextJS" ? "dark:text-light-50" : ""}`}
                     aria-hidden="true"
                   />
-                  <span class="text-sm text-light-500 dark:text-dark-200">
+                  <span class="text-sm text-light-500 dark:text-[#C8C6C8]">
                     {lang}
                   </span>
                 </div>
@@ -123,7 +171,7 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
     <a
       href={project.html_url}
       target="_blank"
-      class="inline-block mt-6 px-4 py-2 border border-light-400 dark:border-dark-300 text-light-450 dark:text-dark-200 rounded-md hover:bg-light-200 dark:hover:bg-dark-500 transition"
+      class="inline-block mt-6 px-4 py-2 border border-light-400 dark:border-dark-300 text-light-450 dark:text-[#C8C6C8] rounded-md hover:bg-light-200 dark:hover:bg-dark-500 transition"
     >
       Ver en GitHub
     </a>
@@ -134,27 +182,27 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
           <article
             id="readme-article"
             class="readme-content prose prose-sm max-w-none
-              prose-headings:text-light-700 dark:prose-headings:text-dark-100
+              prose-headings:text-light-700 dark:prose-headings:text-[#E5E3E5]
               prose-headings:border-b prose-headings:border-light-300 dark:prose-headings:border-dark-400 prose-headings:pb-2
-              prose-p:text-light-600 dark:prose-p:text-dark-200
+              prose-p:text-light-600 dark:prose-p:text-[#C8C6C8]
               prose-a:text-blue-700 dark:prose-a:text-blue-400 prose-a:underline-offset-2
-              prose-strong:text-light-700 dark:prose-strong:text-dark-100
-              prose-code:text-rose-600 dark:prose-code:text-dark-200
+              prose-strong:text-light-700 dark:prose-strong:text-[#E5E3E5]
+              prose-code:text-rose-600 dark:prose-code:text-rose-300
               prose-code:bg-light-300 dark:prose-code:bg-dark-500
               prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
               prose-pre:bg-light-800 dark:prose-pre:bg-dark-600
-              prose-pre:text-light-50 dark:prose-pre:text-dark-100
+              prose-pre:text-light-50 dark:prose-pre:text-[#D4D2D4]
               prose-pre:border prose-pre:border-light-300 dark:prose-pre:border-dark-400
               prose-pre:rounded-lg
               prose-img:rounded-lg prose-img:shadow-md
               prose-blockquote:border-l-4 prose-blockquote:border-light-400 dark:prose-blockquote:border-dark-400
-              prose-blockquote:text-light-500 dark:prose-blockquote:text-dark-300
+              prose-blockquote:text-light-500 dark:prose-blockquote:text-[#B8B6B8]
               prose-blockquote:bg-light-100 dark:prose-blockquote:bg-dark-500 prose-blockquote:rounded-r-lg prose-blockquote:py-1
-              prose-li:text-light-600 dark:prose-li:text-dark-200
-              prose-li:marker:text-light-400 dark:prose-li:marker:text-dark-300
+              prose-li:text-light-600 dark:prose-li:text-[#C8C6C8]
+              prose-li:marker:text-light-400 dark:prose-li:marker:text-[#A0A0A0]
               prose-hr:border-light-300 dark:prose-hr:border-dark-400
-              prose-th:text-light-700 dark:prose-th:text-dark-100
-              prose-td:text-light-600 dark:prose-td:text-dark-200"
+              prose-th:text-light-700 dark:prose-th:text-[#E5E3E5]
+              prose-td:text-light-600 dark:prose-td:text-[#C8C6C8]"
             set:html={readmeHtml}
           />
         </div>
@@ -167,28 +215,6 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
   document.addEventListener("DOMContentLoaded", () => {
     const article = document.getElementById("readme-article");
     if (!article) return;
-
-    // Handle anchor links: scroll smoothly instead of changing URL
-    article.querySelectorAll('a[href^="#"]').forEach((link) => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        const href = link.getAttribute("href");
-        if (!href || href === "#") return;
-
-        const targetId = href.slice(1);
-        // GitHub adds "user-content-" prefix to heading IDs in rendered HTML
-        const target =
-          document.getElementById(`user-content-${targetId}`) ||
-          document.getElementById(targetId) ||
-          article.querySelector(`[name="${targetId}"]`);
-
-        if (target) {
-          target.scrollIntoView({ behavior: "smooth", block: "start" });
-          // Update hash without triggering navigation
-          history.replaceState(null, "", href);
-        }
-      });
-    });
 
     // Make external links open in new tab
     article.querySelectorAll('a[href^="http"]').forEach((link) => {
