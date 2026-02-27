@@ -1,4 +1,4 @@
----
+﻿---
 import ThemeToggle from "./ThemeToggle.astro";
 import VSIcon from "@icons/VSIcon.astro";
 import MoreIcon from "@icons/MoreIcon.astro";
@@ -8,8 +8,10 @@ import SearchIcon from "@icons/SearchIcon.astro";
 import MinimizeIcon from "@icons/MinimizeIcon.astro";
 import RestoreIcon from "@icons/RestoreIcon.astro";
 import CloseIcon from "@icons/CloseIcon.astro";
+import MinimizedOverlay from "./MinimizedOverlay.astro";
 
 const navOptions = ["File", "Edit", "Selection", "View", "Go"];
+import { GITHUB_USER } from "astro:env/server";
 ---
 
 <header
@@ -44,9 +46,11 @@ const navOptions = ["File", "Edit", "Selection", "View", "Go"];
   <div class="flex items-center w-full max-w-[600px] justify-center space-x-2">
     <div class="hidden md:flex items-center ml-3">
       <div
-        class="px-2 py-1 rounded-[4px] transition-colors duration-200
-        hover:bg-light-300 dark:hover:bg-[#333234]
-        hover:text-light-500 dark:hover:text-dark-50"
+        id="btn-back"
+        role="button"
+        tabindex="0"
+        title="Atrás"
+        class="nav-btn px-2 py-1 rounded-[4px] transition-all duration-200"
       >
         <ArrowLeftIcon
           className="text-light-400 dark:text-dark-300"
@@ -54,9 +58,11 @@ const navOptions = ["File", "Edit", "Selection", "View", "Go"];
         />
       </div>
       <div
-        class="px-2 py-1 rounded-[4px] transition-colors duration-200
-        hover:bg-light-300 dark:hover:bg-[#333234]
-        hover:text-light-500 dark:hover:text-dark-50"
+        id="btn-forward"
+        role="button"
+        tabindex="0"
+        title="Adelante"
+        class="nav-btn px-2 py-1 rounded-[4px] transition-all duration-200"
       >
         <ArrowRightIcon
           className="text-light-400 dark:text-dark-300"
@@ -75,7 +81,7 @@ const navOptions = ["File", "Edit", "Selection", "View", "Go"];
         className="text-light-400 dark:text-dark-300 group-hover:text-light-500 dark:group-hover:text-dark-100"
         height="14"
       />
-      <span>Portfolio-FaberOspina</span>
+      <span>Portfolio-{GITHUB_USER}</span>
     </div>
   </div>
 
@@ -85,7 +91,9 @@ const navOptions = ["File", "Edit", "Selection", "View", "Go"];
 
   <div class="hidden sm:flex items-center">
     <button
-      class="py-2 px-3 transition-colors duration-200 hover:bg-light-300 dark:hover:bg-[#333234]"
+      id="btn-minimize"
+      title="Minimizar"
+      class="py-2 px-3 transition-colors duration-200 hover:bg-light-300 dark:hover:bg-[#333234] cursor-pointer"
     >
       <MinimizeIcon
         width="16"
@@ -94,7 +102,9 @@ const navOptions = ["File", "Edit", "Selection", "View", "Go"];
       />
     </button>
     <button
-      class="py-2 px-3 transition-colors duration-200 hover:bg-light-300 dark:hover:bg-[#333234]"
+      id="btn-restore"
+      title="Restaurar"
+      class="py-2 px-3 transition-colors duration-200 hover:bg-light-300 dark:hover:bg-[#333234] cursor-pointer"
     >
       <RestoreIcon
         width="16"
@@ -103,7 +113,9 @@ const navOptions = ["File", "Edit", "Selection", "View", "Go"];
       />
     </button>
     <button
-      class="group py-2 px-3 transition-colors duration-200 hover:bg-red-500 dark:hover:bg-red-600"
+      id="btn-close"
+      title="Cerrar"
+      class="group py-2 px-3 transition-colors duration-200 hover:bg-red-500 dark:hover:bg-red-600 cursor-pointer"
     >
       <CloseIcon
         width="16"
@@ -113,3 +125,81 @@ const navOptions = ["File", "Edit", "Selection", "View", "Go"];
     </button>
   </div>
 </header>
+
+<MinimizedOverlay />
+
+<script>
+  // ═══════════════════════════════════════════════════════════════
+  //  Navigation: Back / Forward with history tracking
+  // ═══════════════════════════════════════════════════════════════
+  const NAV_KEY = "__navIdx";
+  const btnBack = document.getElementById("btn-back");
+  const btnFwd = document.getElementById("btn-forward");
+
+  const perfNav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+  const isTraversal = perfNav?.type === "back_forward";
+
+  let curIdx: number;
+  let maxIdx: number;
+
+  if (isTraversal && history.state?.[NAV_KEY] !== undefined) {
+    curIdx = history.state[NAV_KEY];
+    maxIdx = parseInt(sessionStorage.getItem("__navMax") || "0");
+  } else {
+    const prev = parseInt(sessionStorage.getItem("__navCur") || "-1");
+    curIdx = prev + 1;
+    maxIdx = curIdx;
+    history.replaceState({ ...history.state, [NAV_KEY]: curIdx }, "");
+  }
+
+  sessionStorage.setItem("__navCur", String(curIdx));
+  sessionStorage.setItem("__navMax", String(maxIdx));
+
+  function setNavStates() {
+    const canBack = curIdx > 0;
+    const canFwd = curIdx < maxIdx;
+
+    if (btnBack) {
+      btnBack.classList.toggle("nav-btn--enabled", canBack);
+      btnBack.classList.toggle("nav-btn--disabled", !canBack);
+      btnBack.setAttribute("aria-disabled", String(!canBack));
+      btnBack.setAttribute("tabindex", canBack ? "0" : "-1");
+    }
+    if (btnFwd) {
+      btnFwd.classList.toggle("nav-btn--enabled", canFwd);
+      btnFwd.classList.toggle("nav-btn--disabled", !canFwd);
+      btnFwd.setAttribute("aria-disabled", String(!canFwd));
+      btnFwd.setAttribute("tabindex", canFwd ? "0" : "-1");
+    }
+  }
+
+  setNavStates();
+
+  btnBack?.addEventListener("click", () => {
+    if (curIdx > 0) history.back();
+  });
+  btnFwd?.addEventListener("click", () => {
+    if (curIdx < maxIdx) history.forward();
+  });
+</script>
+
+<style>
+  .nav-btn--enabled {
+    cursor: pointer;
+    opacity: 1;
+  }
+
+  .nav-btn--enabled:hover {
+    background-color: var(--color-light-300);
+  }
+
+  :global(.dark) .nav-btn--enabled:hover {
+    background-color: #333234;
+  }
+
+  .nav-btn--disabled {
+    opacity: 0.3;
+    cursor: default;
+    pointer-events: none;
+  }
+</style>

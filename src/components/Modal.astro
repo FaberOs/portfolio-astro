@@ -12,7 +12,7 @@ const { id } = Astro.props;
     <h2 class="text-2xl font-bold">Settings</h2>
     <form method="dialog">
       <button
-        class="group text-xl p-1 hover:bg-light-200 dark:hover:bg-dark-700 rounded transition-colors"
+        class="group text-xl p-1 hover:bg-light-200 dark:hover:bg-dark-700 rounded transition-colors cursor-pointer"
       >
         <CloseIcon
           height="20"
@@ -30,13 +30,13 @@ const { id } = Astro.props;
     <div class="flex items-center space-x-2">
       <button
         id="lightTheme"
-        class="px-4 py-2 text-sm border border-light-300 dark:border-dark-600 rounded hover:bg-light-200 dark:hover:bg-dark-700 transition-colors"
+        class="px-4 py-2 text-sm border border-light-300 dark:border-dark-600 rounded hover:bg-light-200 dark:hover:bg-dark-700 transition-colors cursor-pointer"
       >
         Light
       </button>
       <button
         id="darkTheme"
-        class="px-4 py-2 text-sm border border-light-300 dark:border-dark-600 rounded hover:bg-light-200 dark:hover:bg-dark-700 transition-colors"
+        class="px-4 py-2 text-sm border border-light-300 dark:border-dark-600 rounded hover:bg-light-200 dark:hover:bg-dark-700 transition-colors cursor-pointer"
       >
         Dark
       </button>
@@ -46,7 +46,7 @@ const { id } = Astro.props;
   <hr class="border-light-300 dark:border-dark-600 mb-4" />
 
   <div class="mt-6 text-xs text-center text-dark-400 dark:text-light-500">
-    <p>Version 1.1.1</p>
+    <p>Version 1.2.0</p>
     <p>Created by FaberOs</p>
   </div>
 </dialog>

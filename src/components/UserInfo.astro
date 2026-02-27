@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import { GITHUB_USER } from "astro:env/server";
 import { BASE_URL } from "astro:env/server";
+import { githubFetch } from "@lib/github";
 
 import OrganizationIcon from "@icons/OrganizationIcon.astro";
 import LocationIcon from "@icons/LocationIcon.astro";
@@ -20,13 +21,13 @@ type User = {
 };
 
 let user: User | null = null;
-try {
-  const res = await fetch(`${BASE_URL}/users/${GITHUB_USER}`);
-  if (res.ok) {
-    user = await res.json();
-  }
-} catch {
-  // API request failed
+let rateLimited = false;
+
+const result = await githubFetch<User>(`${BASE_URL}/users/${GITHUB_USER}`);
+if (result.ok) {
+  user = result.data;
+} else {
+  rateLimited = result.rateLimited;
 }
 ---
 
@@ -110,9 +111,16 @@ try {
       </div>
     </div>
   </div>
+) : rateLimited ? (
+  <div data-api-error="rate-limit" class="text-center py-8">
+    <div class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full bg-light-300 dark:bg-dark-500 flex items-center justify-center">
+      <span class="text-3xl">⏳</span>
+    </div>
+    <p class="mt-4 text-amber-600 dark:text-amber-400 text-sm">Límite de solicitudes alcanzado. Recarga en unos minutos.</p>
+  </div>
 ) : (
-  <div class="text-center py-8">
-    <div class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full bg-light-300 dark:bg-dark-500 animate-pulse"></div>
+  <div data-api-error="error" class="text-center py-8">
+    <div class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full bg-light-300 dark:bg-dark-500"></div>
     <p class="mt-4 text-light-400 dark:text-dark-300 text-sm">No se pudo cargar la información del usuario.</p>
   </div>
 )}

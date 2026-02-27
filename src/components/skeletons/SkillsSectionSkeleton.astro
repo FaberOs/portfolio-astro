@@ -1,0 +1,28 @@
+---
+/**
+ * Skeleton fallback for SkillsSection component.
+ * Shows placeholder pills in a 2×3 / 3-col grid.
+ */
+---
+
+<section
+  class="border border-light-300 dark:border-dark-400 rounded-lg p-4 text-sm space-y-4"
+>
+  <!-- Header -->
+  <div class="flex items-center gap-2">
+    <div class="h-5 w-5 rounded bg-light-200 dark:bg-dark-500 animate-pulse"></div>
+    <div class="h-5 w-16 rounded-md bg-light-200 dark:bg-dark-500 animate-pulse"></div>
+  </div>
+
+  <!-- Skill pills grid -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-4">
+    {
+      Array.from({ length: 9 }).map(() => (
+        <div class="flex items-center gap-2 bg-light-100 dark:bg-dark-500 p-2 rounded-md border border-light-300 dark:border-dark-400">
+          <div class="h-5 w-5 rounded bg-light-200 dark:bg-dark-500 animate-pulse shrink-0" />
+          <div class="h-3.5 w-16 rounded bg-light-200 dark:bg-dark-500 animate-pulse" />
+        </div>
+      ))
+    }
+  </div>
+</section>

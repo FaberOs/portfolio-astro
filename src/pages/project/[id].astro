@@ -1,8 +1,10 @@
 ---
 import { GITHUB_USER, BASE_URL } from "astro:env/server";
-import { getImage } from "astro:assets";
+import { githubFetch } from "@lib/github";
 import Layout from "@layouts/Layout.astro";
 import LinkIcon from "@icons/LinkIcon.astro";
+import ProjectReadme from "@components/ProjectReadme.astro";
+import ProjectReadmeSkeleton from "@components/skeletons/ProjectReadmeSkeleton.astro";
 
 const { id } = Astro.params;
 
@@ -16,89 +18,26 @@ type Project = {
   homepage: string | null;
 };
 
-const res = await fetch(`${BASE_URL}/repos/${GITHUB_USER}/${id}`);
+let project: Project | null = null;
+let rateLimited = false;
 
-if (!res.ok) {
+const result = await githubFetch<Project>(`${BASE_URL}/repos/${GITHUB_USER}/${id}`);
+if (result.ok) {
+  project = result.data;
+} else if (result.rateLimited) {
+  rateLimited = true;
+} else {
   return Astro.rewrite('/404');
 }
 
-const project: Project = await res.json();
-
-const languagesRes = await fetch(
-  `${BASE_URL}/repos/${GITHUB_USER}/${id}/languages`
-);
-const languagesData: Record<string, number> = await languagesRes.json();
-const languages = Object.keys(languagesData);
-
-// Fetch README rendered as HTML from GitHub API
-let readmeHtml: string | null = null;
-try {
-  const readmeRes = await fetch(
-    `${BASE_URL}/repos/${GITHUB_USER}/${id}/readme`,
-    {
-      headers: {
-        Accept: "application/vnd.github.html+json",
-      },
-    }
+let languages: string[] = [];
+if (project) {
+  const langResult = await githubFetch<Record<string, number>>(
+    `${BASE_URL}/repos/${GITHUB_USER}/${id}/languages`
   );
-  if (readmeRes.ok) {
-    let raw = await readmeRes.text();
-
-    // Fix image src URLs: relative paths and GitHub blob URLs won't load
-    // outside of github.com — rewrite them to raw.githubusercontent.com
-    raw = raw.replace(
-      /(<img[^>]+src=")([^"]+)(")/gi,
-      (_match, prefix, src, suffix) => {
-        // Relative path (e.g. "assets/img.png" or "/assets/img.png")
-        if (!src.startsWith("http") && !src.startsWith("data:") && !src.startsWith("//")) {
-          const cleanPath = src.startsWith("/") ? src.slice(1) : src;
-          return `${prefix}https://raw.githubusercontent.com/${GITHUB_USER}/${id}/HEAD/${cleanPath}${suffix}`;
-        }
-        // GitHub blob URL (e.g. https://github.com/user/repo/blob/main/assets/img.png)
-        if (/https?:\/\/github\.com\/[^/]+\/[^/]+\/blob\//.test(src)) {
-          const rawSrc = src
-            .replace("https://github.com/", "https://raw.githubusercontent.com/")
-            .replace("/blob/", "/");
-          return `${prefix}${rawSrc}${suffix}`;
-        }
-        return _match;
-      }
-    );
-
-    // Remove <a> wrappers that only contain an <img> so clicking an image
-    // does not navigate to the image URL
-    raw = raw.replace(/<a\b[^>]*>\s*(<img\b[^>]*\/?>\s*)<\/a>/gi, "$1");
-
-    // Optimize images through Astro's image service (resolves "Use Image component" hint)
-    // Only process absolute https URLs — relative / data URIs are left as-is
-    const imgMatches = [...raw.matchAll(/<img[^>]+src="(https:\/\/[^"]+)"/gi)];
-    const uniqueUrls = [...new Set(imgMatches.map((m) => m[1]))];
-
-    const optimizedMap = new Map<string, string>();
-    for (const url of uniqueUrls) {
-      try {
-        const optimized = await getImage({ src: url, inferSize: true });
-        optimizedMap.set(url, optimized.src);
-      } catch {
-        // Optimization failed (unknown dimensions etc.) — keep original URL
-      }
-    }
-
-    if (optimizedMap.size > 0) {
-      raw = raw.replace(/<img([^>]+)src="(https:\/\/[^"]+)"/gi, (match, before, src) => {
-        const optimized = optimizedMap.get(src);
-        return optimized ? `<img${before}src="${optimized}"` : match;
-      });
-    }
-
-    // Inject lazy loading on all <img> tags
-    readmeHtml = raw.replace(
-      /<img(\s)/gi,
-      '<img loading="lazy" decoding="async"$1'
-    );
+  if (langResult.ok) {
+    languages = Object.keys(langResult.data);
   }
-} catch {
-  // README not available, that's fine
 }
 
 const deviconMap: Record<string, string> = {
@@ -118,14 +57,30 @@ const deviconMap: Record<string, string> = {
 const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
 ---
 
-<Layout title={project.name}>
+<Layout title={project?.name ?? id ?? 'Proyecto'}>
   <div class="max-w-3xl mx-auto py-10 px-6">
-    <h1 class="text-3xl font-bold text-light-900 dark:text-[#E5E3E5]">
-      {project.name}
-    </h1>
-    <p class="text-sm text-light-500 dark:text-[#A0A0A0] mt-2">
-      {new Date(project.created_at).toLocaleDateString()}
-    </p>
+    {rateLimited ? (
+      <div data-api-error="rate-limit" class="text-center py-20">
+        <span class="text-5xl">⏳</span>
+        <h1 class="text-2xl font-bold text-light-900 dark:text-[#E5E3E5] mt-6">Límite de solicitudes alcanzado</h1>
+        <p class="mt-3 text-amber-600 dark:text-amber-400 text-sm max-w-md mx-auto">
+          La API de GitHub ha alcanzado el límite de solicitudes. Intenta recargar la página en unos minutos.
+        </p>
+        <a
+          href="/"
+          class="inline-block mt-6 px-4 py-2 border border-light-400 dark:border-dark-300 text-light-450 dark:text-[#C8C6C8] rounded-md hover:bg-light-200 dark:hover:bg-dark-500 transition"
+        >
+          Volver al inicio
+        </a>
+      </div>
+    ) : project && (
+      <Fragment>
+        <h1 class="text-3xl font-bold text-light-900 dark:text-[#E5E3E5]">
+          {project.name}
+        </h1>
+        <p class="text-sm text-light-500 dark:text-[#A0A0A0] mt-2">
+          {new Date(project.created_at).toLocaleDateString()}
+        </p>
     {
       project.description && (
         <p class="mt-4 text-light-600 dark:text-[#C8C6C8] text-base">
@@ -176,145 +131,14 @@ const filteredLanguages = languages.filter((lang) => deviconMap[lang]);
       Ver en GitHub
     </a>
 
-    {
-      readmeHtml && (
-        <div class="mt-10 border-t border-light-300 dark:border-dark-400 pt-8">
-          <article
-            id="readme-article"
-            class="readme-content prose prose-sm max-w-none
-              prose-headings:text-light-700 dark:prose-headings:text-[#E5E3E5]
-              prose-headings:border-b prose-headings:border-light-300 dark:prose-headings:border-dark-400 prose-headings:pb-2
-              prose-p:text-light-600 dark:prose-p:text-[#C8C6C8]
-              prose-a:text-blue-700 dark:prose-a:text-blue-400 prose-a:underline-offset-2
-              prose-strong:text-light-700 dark:prose-strong:text-[#E5E3E5]
-              prose-code:text-rose-600 dark:prose-code:text-rose-300
-              prose-code:bg-light-300 dark:prose-code:bg-dark-500
-              prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-xs
-              prose-pre:bg-light-800 dark:prose-pre:bg-dark-600
-              prose-pre:text-light-50 dark:prose-pre:text-[#D4D2D4]
-              prose-pre:border prose-pre:border-light-300 dark:prose-pre:border-dark-400
-              prose-pre:rounded-lg
-              prose-img:rounded-lg prose-img:shadow-md
-              prose-blockquote:border-l-4 prose-blockquote:border-light-400 dark:prose-blockquote:border-dark-400
-              prose-blockquote:text-light-500 dark:prose-blockquote:text-[#B8B6B8]
-              prose-blockquote:bg-light-100 dark:prose-blockquote:bg-dark-500 prose-blockquote:rounded-r-lg prose-blockquote:py-1
-              prose-li:text-light-600 dark:prose-li:text-[#C8C6C8]
-              prose-li:marker:text-light-400 dark:prose-li:marker:text-[#A0A0A0]
-              prose-hr:border-light-300 dark:prose-hr:border-dark-400
-              prose-th:text-light-700 dark:prose-th:text-[#E5E3E5]
-              prose-td:text-light-600 dark:prose-td:text-[#C8C6C8]"
-            set:html={readmeHtml}
-          />
-        </div>
-      )
-    }
+    <ProjectReadme projectId={id!} server:defer>
+      <ProjectReadmeSkeleton slot="fallback" />
+    </ProjectReadme>
+      </Fragment>
+    )}
   </div>
 </Layout>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const article = document.getElementById("readme-article");
-    if (!article) return;
-
-    // Make external links open in new tab
-    article.querySelectorAll('a[href^="http"]').forEach((link) => {
-      link.setAttribute("target", "_blank");
-      link.setAttribute("rel", "noopener noreferrer");
-    });
-
-    // Fix code blocks: remove prose-code styles from code inside pre (block code)
-    article.querySelectorAll("pre code").forEach((code) => {
-      code.classList.add("!bg-transparent", "!p-0", "!text-inherit", "!text-sm", "!rounded-none");
-    });
-  });
-</script>
-
 <style>
   @import url("https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css");
-
-  /* Images */
-  .readme-content :global(img) {
-    max-width: 100%;
-    height: auto;
-  }
-
-  /* Code blocks */
-  .readme-content :global(pre) {
-    overflow-x: auto;
-    padding: 1rem;
-  }
-
-  .readme-content :global(pre code) {
-    background: transparent !important;
-    padding: 0 !important;
-    border-radius: 0 !important;
-    color: inherit !important;
-    font-size: 0.8125rem !important;
-  }
-
-  /* Tables */
-  .readme-content :global(table) {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8125rem;
-  }
-
-  .readme-content :global(th) {
-    background-color: var(--color-light-200);
-    font-weight: 600;
-  }
-
-  :global(.dark) .readme-content :global(th) {
-    background-color: var(--color-dark-500);
-  }
-
-  .readme-content :global(th),
-  .readme-content :global(td) {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--color-light-300);
-  }
-
-  :global(.dark) .readme-content :global(th),
-  :global(.dark) .readme-content :global(td) {
-    border-color: var(--color-dark-400);
-  }
-
-  /* Headings: smooth scroll target offset */
-  .readme-content :global(h1),
-  .readme-content :global(h2),
-  .readme-content :global(h3),
-  .readme-content :global(h4),
-  .readme-content :global(h5),
-  .readme-content :global(h6) {
-    scroll-margin-top: 4rem;
-  }
-
-  /* Anchor icon links (GitHub adds SVG anchor links to headings) */
-  .readme-content :global(a.anchor) {
-    display: none;
-  }
-
-  /* Badge images inline */
-  .readme-content :global(a > img) {
-    display: inline-block;
-    margin: 0;
-    box-shadow: none;
-    border-radius: 0.25rem;
-  }
-
-  /* Task lists */
-  .readme-content :global(.contains-task-list) {
-    list-style: none;
-    padding-left: 0;
-  }
-
-  .readme-content :global(.task-list-item) {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-  }
-
-  .readme-content :global(.task-list-item input[type="checkbox"]) {
-    pointer-events: none;
-  }
 </style>

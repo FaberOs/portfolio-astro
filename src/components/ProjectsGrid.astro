@@ -1,5 +1,6 @@
 ---
 import { GITHUB_USER_URL } from "astro:env/server";
+import { githubFetch } from "@lib/github";
 import ProjectCard from "@components/ProjectCard.astro";
 import RepoIcon from "@icons/RepoIcon.astro";
 
@@ -14,14 +15,13 @@ type Project = {
 };
 
 let projects: Project[] = [];
-try {
-  const res = await fetch(`${GITHUB_USER_URL}/repos`);
-  if (res.ok) {
-    const data = await res.json();
-    projects = Array.isArray(data) ? data : [];
-  }
-} catch {
-  // API request failed
+let rateLimited = false;
+
+const result = await githubFetch<Project[]>(`${GITHUB_USER_URL}/repos`);
+if (result.ok) {
+  projects = Array.isArray(result.data) ? result.data : [];
+} else {
+  rateLimited = result.rateLimited;
 }
 
 projects = projects.sort(
@@ -36,17 +36,28 @@ projects = projects.sort(
     <h2 class="text-xl font-semibold">Todos los proyectos</h2>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-    {
-      projects.map((project) => (
-        <ProjectCard
-          name={project.name}
-          description={project.description}
-          language={project.language}
-          homepage={project.homepage}
-          createdAt={project.created_at}
-        />
-      ))
-    }
-  </div>
+  {rateLimited ? (
+    <div data-api-error="rate-limit" class="text-center py-12">
+      <span class="text-3xl">⏳</span>
+      <p class="mt-3 text-amber-600 dark:text-amber-400 text-sm">Límite de solicitudes alcanzado. Recarga en unos minutos.</p>
+    </div>
+  ) : projects.length === 0 ? (
+    <div data-api-error="error" class="text-center py-12">
+      <p class="text-light-400 dark:text-dark-300 text-sm">No se pudieron cargar los proyectos.</p>
+    </div>
+  ) : (
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {
+        projects.map((project) => (
+          <ProjectCard
+            name={project.name}
+            description={project.description}
+            language={project.language}
+            homepage={project.homepage}
+            createdAt={project.created_at}
+          />
+        ))
+      }
+    </div>
+  )}
 </section>
