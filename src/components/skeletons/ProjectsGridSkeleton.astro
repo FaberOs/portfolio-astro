@@ -1,0 +1,19 @@
+---
+/**
+ * Skeleton fallback for the ProjectsGrid section.
+ * Includes the section header and a grid of 6 ProjectCardSkeleton placeholders.
+ */
+import ProjectCardSkeleton from "@components/skeletons/ProjectCardSkeleton.astro";
+import RepoIcon from "@icons/RepoIcon.astro";
+---
+
+<section class="w-full max-w-5xl mx-auto px-4">
+  <div class="flex items-center gap-2 text-light-600 dark:text-dark-100 mb-6">
+    <RepoIcon width="20" height="20" />
+    <h2 class="text-xl font-semibold">Todos los proyectos</h2>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {Array.from({ length: 6 }).map(() => <ProjectCardSkeleton />)}
+  </div>
+</section>

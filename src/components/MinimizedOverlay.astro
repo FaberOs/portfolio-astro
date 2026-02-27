@@ -1,0 +1,369 @@
+---
+/**
+ * Minimized window overlay + bottom bar + troll close toast.
+ * Extracted from Header.astro for cleaner separation of concerns.
+ */
+import MinimizeIcon from "@icons/MinimizeIcon.astro";
+import RestoreIcon from "@icons/RestoreIcon.astro";
+import CloseIcon from "@icons/CloseIcon.astro";
+import ArrowRightIcon from "@icons/ArrowRightIcon.astro";
+
+import { GITHUB_USER } from "astro:env/server";
+---
+
+<!-- Overlay que simula escritorio cuando la ventana se minimiza -->
+<div
+  id="minimize-overlay"
+  class="fixed inset-0 z-40 hidden bg-rose-50 dark:bg-[#0c0c0e] cursor-default select-none"
+>
+  <!-- Fondo: rosa-teal en claro, azul oscuro en dark -->
+  <div
+    class="absolute inset-0 bg-gradient-to-br from-rose-100 via-rose-50 to-teal-100 dark:from-[#1a1a2e] dark:via-[#0c0c0e] dark:to-[#16213e] opacity-80"
+  >
+  </div>
+
+  <!-- Título centrado -->
+  <div
+    class="absolute inset-0 flex flex-col items-center justify-center opacity-0 transition-opacity duration-500"
+    id="overlay-content"
+  >
+    <span class="text-rose-900/15 dark:text-white/20 text-5xl md:text-7xl font-light tracking-widest"
+      >Portfolio</span
+    >
+    <span
+      class="text-rose-900/10 dark:text-white/10 text-sm md:text-base mt-3 tracking-[0.3em] uppercase"
+      >{GITHUB_USER}
+    </span>
+  </div>
+
+  <!-- Guía horizontal: "Restaura aquí →" -->
+  <div
+    class="absolute bottom-14 right-4 sm:right-12 flex items-center gap-2 opacity-0 transition-opacity duration-700 delay-500"
+    id="overlay-guide"
+  >
+    <span class="text-rose-900/30 dark:text-white/30 text-base font-medium italic"
+      >Restaura aquí</span
+    >
+    <ArrowRightIcon className="text-rose-900/30 dark:text-white/30 rotate-90" width="20" height="20"/>
+  </div>
+</div>
+
+<!-- Barra minimizada estilo header -->
+<div
+  id="minimized-bar"
+  class="fixed bottom-0 left-0 right-0 z-50 hidden items-center justify-between
+    bg-light-200 dark:bg-dark-700 backdrop-blur-md
+    border-t border-light-300 dark:border-dark-800
+    select-none"
+>
+  <!-- Izquierda: VS Code icon + Portfolio -->
+  <div class="flex items-center ml-3 gap-2">
+    <!-- SVG con gradient IDs únicos para evitar conflictos con el VSIcon del Header -->
+    <svg
+      width="18px"
+      height="18px"
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M21.0016 3.11679C21.0016 2.23783 20.0175 2.23782 19.5801 2.34769C20.1924 1.86426 20.9105 1.98147 21.1656 2.12796L27.079 5.02747C27.6424 5.30375 27.9998 5.8786 27.9998 6.50857V25.5831C27.9998 26.2215 27.6329 26.8025 27.058 27.0743L21.4937 29.7054C21.1109 29.8701 20.2799 30.2767 19.5801 29.7053C20.4549 29.8702 20.9287 29.2476 21.0016 28.8264V3.11679Z"
+        fill="url(#bar_g0)"></path>
+      <path
+        d="M19.6512 2.3319C20.1154 2.24017 21.0018 2.28271 21.0018 3.11685V9.68254L3.07359 23.2453C2.76022 23.4824 2.3192 23.443 2.05229 23.1542L0.204532 21.1548C-0.0849358 20.8416 -0.0646824 20.3513 0.249624 20.0633L19.5802 2.34775L19.6512 2.3319Z"
+        fill="url(#bar_g1)"></path>
+      <path
+        d="M21.0018 22.3708L3.07359 8.80801C2.76022 8.57094 2.3192 8.61028 2.05229 8.8991L0.204532 10.8985C-0.0849358 11.2117 -0.0646824 11.702 0.249624 11.9901L19.5802 29.7056C20.455 29.8704 20.9289 29.2478 21.0018 28.8266V22.3708Z"
+        fill="url(#bar_g2)"></path>
+      <defs>
+        <linearGradient
+          id="bar_g0"
+          x1="23.79"
+          y1="2"
+          x2="23.79"
+          y2="30"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stop-color="#32B5F1"></stop>
+          <stop offset="1" stop-color="#2B9FED"></stop>
+        </linearGradient>
+        <linearGradient
+          id="bar_g1"
+          x1="21.0018"
+          y1="5.53398"
+          x2="1.0217"
+          y2="22.3051"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stop-color="#0F6FB3"></stop>
+          <stop offset="0.270551" stop-color="#1279B7"></stop>
+          <stop offset="0.421376" stop-color="#1176B5"></stop>
+          <stop offset="0.618197" stop-color="#0E69AC"></stop>
+          <stop offset="0.855344" stop-color="#0F70AF"></stop>
+          <stop offset="1" stop-color="#0F6DAD"></stop>
+        </linearGradient>
+        <linearGradient
+          id="bar_g2"
+          x1="1.15522"
+          y1="9.98389"
+          x2="21.0791"
+          y2="26.4808"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stop-color="#1791D2"></stop>
+          <stop offset="1" stop-color="#1173C5"></stop>
+        </linearGradient>
+      </defs>
+    </svg>
+    <span
+      class="text-light-500 dark:text-dark-300 text-sm font-medium hidden sm:inline"
+      >Portfolio</span
+    >
+  </div>
+
+  <!-- Derecha: botones de ventana -->
+  <div class="flex items-center">
+    <button
+      id="bar-btn-minimize"
+      title="Minimizar"
+      class="py-2 px-3 transition-colors duration-200 hover:bg-light-300 dark:hover:bg-[#333234] cursor-pointer"
+    >
+      <MinimizeIcon
+        width="16"
+        height="16"
+        className="text-light-500 dark:text-dark-300"
+      />
+    </button>
+    <button
+      id="bar-btn-restore"
+      title="Restaurar"
+      class="py-2 px-3 transition-colors duration-200 hover:bg-light-300 dark:hover:bg-[#333234] cursor-pointer"
+    >
+      <RestoreIcon
+        width="16"
+        height="16"
+        className="text-light-500 dark:text-dark-300"
+      />
+    </button>
+    <button
+      id="bar-btn-close"
+      title="Cerrar"
+      class="group py-2 px-3 transition-colors duration-200 hover:bg-red-500 dark:hover:bg-red-600 cursor-pointer"
+    >
+      <CloseIcon
+        width="16"
+        height="16"
+        className="text-light-500 dark:text-dark-300 dark:group-hover:text-white group-hover:text-white"
+      />
+    </button>
+  </div>
+</div>
+
+<!-- Toast de troll para el botón cerrar -->
+<div
+  id="troll-toast"
+  class="fixed bottom-14 left-1/2 -translate-x-1/2 z-[60]
+    bg-dark-700 dark:bg-light-100 text-dark-100 dark:text-light-700
+    text-sm px-5 py-3 rounded-lg shadow-2xl
+    transition-all duration-300 opacity-0 translate-y-3 pointer-events-none whitespace-nowrap
+    border border-dark-500 dark:border-light-300"
+  style="visibility: hidden;"
+>
+</div>
+
+<script>
+  // ═══════════════════════════════════════════════════════════════
+  //  Minimize / Restore
+  // ═══════════════════════════════════════════════════════════════
+  const layout = document.getElementById("layout");
+  const overlay = document.getElementById("minimize-overlay");
+  const bar = document.getElementById("minimized-bar");
+  const overlayContent = document.getElementById("overlay-content");
+  const overlayGuide = document.getElementById("overlay-guide");
+
+  // Teleport to <body> so they survive when #layout gets display:none
+  if (overlay) document.body.appendChild(overlay);
+  if (bar) document.body.appendChild(bar);
+  const trollToast = document.getElementById("troll-toast");
+  if (trollToast) document.body.appendChild(trollToast);
+
+  function minimize() {
+    if (!layout || !overlay || !bar) return;
+
+    layout.classList.add("window-minimizing");
+
+    setTimeout(() => {
+      layout.style.display = "none";
+      layout.classList.remove("window-minimizing");
+
+      overlay.classList.remove("hidden");
+      requestAnimationFrame(() => {
+        overlay.classList.add("overlay-visible");
+        overlayContent?.classList.add("opacity-100");
+        overlayContent?.classList.remove("opacity-0");
+        overlayGuide?.classList.add("opacity-100");
+        overlayGuide?.classList.remove("opacity-0");
+      });
+
+      bar.classList.remove("hidden");
+      bar.classList.add("flex");
+      requestAnimationFrame(() => bar.classList.add("taskbar-visible"));
+    }, 280);
+  }
+
+  function restore() {
+    if (!layout || !overlay || !bar) return;
+
+    bar.classList.remove("taskbar-visible");
+    overlayContent?.classList.remove("opacity-100");
+    overlayContent?.classList.add("opacity-0");
+    overlayGuide?.classList.remove("opacity-100");
+    overlayGuide?.classList.add("opacity-0");
+
+    setTimeout(() => {
+      overlay.classList.remove("overlay-visible");
+
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+        bar.classList.add("hidden");
+        bar.classList.remove("flex");
+
+        layout.style.display = "";
+        layout.classList.add("window-restoring");
+        setTimeout(() => layout.classList.remove("window-restoring"), 300);
+      }, 200);
+    }, 100);
+  }
+
+  // Header buttons
+  document.getElementById("btn-minimize")?.addEventListener("click", minimize);
+  document.getElementById("btn-restore")?.addEventListener("click", restore);
+
+  // Bar buttons
+  document.getElementById("bar-btn-restore")?.addEventListener("click", restore);
+  document.getElementById("bar-btn-minimize")?.addEventListener("click", () => {
+    bar?.classList.add("taskbar-flash");
+    setTimeout(() => bar?.classList.remove("taskbar-flash"), 400);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  Close (troll)
+  // ═══════════════════════════════════════════════════════════════
+  let toastTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const trollMessages = [
+    "😈 Bonito intento. Prueba Alt+F4",
+    "🤔 ¿De verdad pensaste que funcionaría?",
+    "🚫 Tu navegador dice: NO",
+    "😏 Ctrl+W... o quédate, estás cómodo aquí",
+    "🔒 Esta ventana es inmortal",
+    "👀 ¿A dónde vas? Quédate un rato más",
+  ];
+
+  function showTrollToast(msg: string) {
+    if (!trollToast) return;
+    if (toastTimeout) clearTimeout(toastTimeout);
+
+    trollToast.textContent = msg;
+    trollToast.style.visibility = "visible";
+    trollToast.classList.remove("opacity-0", "translate-y-3");
+    trollToast.classList.add("opacity-100", "translate-y-0");
+
+    toastTimeout = setTimeout(() => {
+      trollToast.classList.remove("opacity-100", "translate-y-0");
+      trollToast.classList.add("opacity-0", "translate-y-3");
+      setTimeout(() => {
+        trollToast.style.visibility = "hidden";
+      }, 300);
+    }, 3500);
+  }
+
+  function handleClose() {
+    window.close();
+    setTimeout(() => {
+      if (!window.closed) {
+        const msg =
+          trollMessages[Math.floor(Math.random() * trollMessages.length)];
+        showTrollToast(msg);
+      }
+    }, 200);
+  }
+
+  document.getElementById("btn-close")?.addEventListener("click", handleClose);
+  document
+    .getElementById("bar-btn-close")
+    ?.addEventListener("click", handleClose);
+</script>
+
+<style is:global>
+  /* ── Minimize animation ──────────────────────────────────────── */
+  #layout.window-minimizing {
+    animation: minimizeOut 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  #layout.window-restoring {
+    animation: restoreIn 0.3s cubic-bezier(0, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes minimizeOut {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    60% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(80px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes restoreIn {
+    0% {
+      transform: translateY(80px);
+      opacity: 0;
+    }
+    40% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* ── Overlay ─────────────────────────────────────────────────── */
+  #minimize-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  #minimize-overlay.overlay-visible {
+    opacity: 1;
+  }
+
+  /* ── Bottom bar ──────────────────────────────────────────────── */
+  #minimized-bar {
+    transform: translateY(100%);
+    transition: transform 0.25s cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  #minimized-bar.taskbar-visible {
+    transform: translateY(0);
+  }
+
+  .taskbar-flash {
+    animation: flash 0.4s ease;
+  }
+
+  @keyframes flash {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+</style>

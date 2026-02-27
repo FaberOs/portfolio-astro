@@ -1,0 +1,84 @@
+---
+/**
+ * Global toast notification for GitHub API errors.
+ * Detects elements with [data-api-error] attribute (injected by server islands)
+ * and shows a non-intrusive toast notification.
+ */
+---
+
+<div
+  id="api-error-toast"
+  class="fixed top-4 left-1/2 -translate-x-1/2 z-[100]
+    bg-amber-50 dark:bg-amber-950/90 text-amber-800 dark:text-amber-200
+    text-sm px-5 py-3 rounded-lg shadow-2xl
+    transition-all duration-300 opacity-0 -translate-y-3 pointer-events-none
+    border border-amber-300 dark:border-amber-700
+    flex items-center gap-3 max-w-lg"
+  style="visibility: hidden;"
+>
+  <span class="text-lg shrink-0">⚠️</span>
+  <span id="api-error-msg"></span>
+</div>
+
+<script>
+  const toast = document.getElementById("api-error-toast");
+  const msgEl = document.getElementById("api-error-msg");
+  let shown = false;
+
+  const messages: Record<string, string> = {
+    "rate-limit":
+      "GitHub API ha alcanzado el límite de solicitudes. Intenta recargar en unos minutos.",
+    error:
+      "No se pudo conectar con la API de GitHub. Verifica tu conexión e intenta de nuevo.",
+  };
+
+  function showApiError(type: string) {
+    if (!toast || !msgEl || shown) return;
+    shown = true;
+
+    msgEl.textContent = messages[type] || messages["error"];
+    toast.style.visibility = "visible";
+    toast.classList.remove("opacity-0", "-translate-y-3");
+    toast.classList.add("opacity-100", "translate-y-0");
+
+    setTimeout(() => {
+      toast.classList.remove("opacity-100", "translate-y-0");
+      toast.classList.add("opacity-0", "-translate-y-3");
+      setTimeout(() => {
+        toast.style.visibility = "hidden";
+      }, 300);
+    }, 7000);
+  }
+
+  function checkForErrors(root: Element | Document = document) {
+    const el = root.querySelector?.("[data-api-error]");
+    if (el) {
+      showApiError(el.getAttribute("data-api-error") || "error");
+    }
+  }
+
+  // Check existing elements on load
+  checkForErrors();
+
+  // Watch for server islands injecting error elements
+  const observer = new MutationObserver((mutations) => {
+    if (shown) return;
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (node instanceof Element) {
+          if (node.hasAttribute("data-api-error")) {
+            showApiError(node.getAttribute("data-api-error") || "error");
+            return;
+          }
+          const child = node.querySelector("[data-api-error]");
+          if (child) {
+            showApiError(child.getAttribute("data-api-error") || "error");
+            return;
+          }
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+</script>

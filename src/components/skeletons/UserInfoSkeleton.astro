@@ -1,0 +1,51 @@
+---
+/**
+ * Skeleton fallback for UserInfo component.
+ * Shown when the GitHub user API request fails.
+ */
+---
+
+<div class="text-center">
+  <!-- Avatar -->
+  <div
+    class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full bg-light-200 dark:bg-dark-500 animate-pulse"
+  >
+  </div>
+
+  <!-- Name -->
+  <div class="mt-4 flex justify-center">
+    <div class="h-7 w-40 rounded-md bg-light-200 dark:bg-dark-500 animate-pulse"></div>
+  </div>
+
+  <!-- Username -->
+  <div class="mt-2 flex justify-center">
+    <div class="h-4 w-24 rounded-md bg-light-200 dark:bg-dark-500 animate-pulse"></div>
+  </div>
+
+  <div class="mt-4 space-y-4 text-sm">
+    <!-- Company / Location box -->
+    <div
+      class="flex flex-col sm:flex-row sm:gap-6 sm:justify-center border border-light-300 dark:border-dark-400 p-4 rounded-lg"
+    >
+      <div class="flex items-center justify-center gap-2">
+        <div class="h-4 w-4 rounded bg-light-200 dark:bg-dark-500 animate-pulse"></div>
+        <div class="h-4 w-28 rounded-md bg-light-200 dark:bg-dark-500 animate-pulse"></div>
+      </div>
+      <div class="flex items-center justify-center gap-2 mt-2 sm:mt-0">
+        <div class="h-4 w-4 rounded bg-light-200 dark:bg-dark-500 animate-pulse"></div>
+        <div class="h-4 w-32 rounded-md bg-light-200 dark:bg-dark-500 animate-pulse"></div>
+      </div>
+    </div>
+
+    <!-- Social links box -->
+    <div
+      class="flex items-center justify-center gap-4 border border-light-300 dark:border-dark-400 p-4 rounded-lg"
+    >
+      {
+        Array.from({ length: 4 }).map(() => (
+          <div class="h-10 w-10 rounded-md bg-light-200 dark:bg-dark-500 animate-pulse" />
+        ))
+      }
+    </div>
+  </div>
+</div>

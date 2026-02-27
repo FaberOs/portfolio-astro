@@ -6,6 +6,9 @@ import SkillsSection from "@components/SkillsSection.astro";
 import Overview from "@components/Overview.astro";
 import ProjectsGrid from "@components/ProjectsGrid.astro";
 
+import UserInfoSkeleton from "@components/skeletons/UserInfoSkeleton.astro";
+import ProjectsGridSkeleton from "@components/skeletons/ProjectsGridSkeleton.astro";
+
 import Layout from "../layouts/Layout.astro";
 import CurvedArrow from "@icons/CurvedArrow.astro";
 ---
@@ -27,7 +30,9 @@ import CurvedArrow from "@icons/CurvedArrow.astro";
       class="mt-10 mb-4 max-w-4xl grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 items-center space-y-4"
     >
       <div class="mx-4">
-        <UserInfo />
+        <UserInfo server:defer>
+          <UserInfoSkeleton slot="fallback" />
+        </UserInfo>
       </div>
 
       <div class="space-y-4 mx-4 xl:mx-0 lg:mx-0">
@@ -43,7 +48,9 @@ import CurvedArrow from "@icons/CurvedArrow.astro";
     </div>
 
     <div class="w-full pb-10">
-      <ProjectsGrid />
+      <ProjectsGrid server:defer>
+        <ProjectsGridSkeleton slot="fallback" />
+      </ProjectsGrid>
     </div>
   </div>
 </Layout>
